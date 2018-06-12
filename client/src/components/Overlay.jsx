@@ -23,7 +23,7 @@ class Overlay extends React.Component {
               <input id="user-input" placeholder="Who are you?" value={this.props.username} onChange={this.props.handleUserNameChange} autoFocus/>
             </form>
           </div>
-          <button>Easy</button><button>Difficult</button>
+          <button onClick = {() => this.props.handleMode(true)}>Difficult</button>
           <div id="overlay-start" onClick={this.props.startGame} className="blinking">{this.state.prompt}</div>
         </div>
       )

@@ -82,7 +82,7 @@ var get1000Words = (callback) => {
 
 // retrieve top 10 users and their high scores
 const retrieveUsers = function(callback) {
-  let queryStr = `SELECT * FROM users ORDER BY high_score DESC LIMIT 10`;
+  let queryStr = `SELECT * FROM users ORDER BY high_score DESC LIMIT 5`;
   connection.query(queryStr, (err, data) => {
     if (err) {
       console.log('DB: error retrieving users', err);

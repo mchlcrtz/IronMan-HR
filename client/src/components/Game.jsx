@@ -16,7 +16,8 @@ class Game extends React.Component {
       theirWords: [],
       time: 0,
       timeInterval: 1000,
-      round: 'roundOne',
+      modeInterval: 700,
+      round: 'all',
       prompt: 'START GAME',
       opponentTime: 0
     }
@@ -29,6 +30,7 @@ class Game extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.sendScore = this.sendScore.bind(this);
     this.stopGame = this.stopGame.bind(this);
+    this.handleMode = this.handleMode.bind(this);
 
     var c = io.connect(process.env.PORT, {query: this.state.time})
     console.log('c', c)
@@ -80,6 +82,15 @@ class Game extends React.Component {
       room: this.props.room,
       username: this.props.username,
     });
+  }
+
+  handleMode(e){
+    if(e){
+      this.setState({
+        round: 'roundThree',
+        modeInterval: 1000
+      })
+    }
   }
 
   // hides starter form and user input, waits for another player to start game
@@ -143,19 +154,19 @@ class Game extends React.Component {
       if (newTime > 20) {
         this.setState({
           time: newTime,
-          timeInterval: 800,
-          round: 'roundThree' // uncomment these to only serve short words at beginning, long words at end
+          timeInterval: this.state.modeInterval,
+          // round: 'roundThree' // uncomment these to only serve short words at beginning, long words at end
         });
       } else if (newTime > 8) { 
         this.setState({
           time: newTime,
-          timeInterval: 800,
-          round: 'roundOne'
+          timeInterval: this.state.modeInterval,
+          // round: 'roundOne'
         });
       } else {
         this.setState({
           time: newTime,
-          round: 'roundOne',
+          // round: 'roundOne',
         });
       }
     }
@@ -275,6 +286,7 @@ class Game extends React.Component {
           handleUserNameChange = {this.props.handleUserNameChange}
           startGame = {this.startGame}
           prompt = {this.state.prompt}
+          handleMode = {this.handleMode}
         />
     
         <Timer time = {this.state.time}/>
