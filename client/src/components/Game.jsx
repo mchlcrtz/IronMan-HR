@@ -16,7 +16,7 @@ class Game extends React.Component {
       theirWords: [],
       time: 0,
       timeInterval: 1000,
-      round: 'all',
+      round: 'roundOne',
       prompt: 'START GAME',
       opponentTime: 0
     }
@@ -144,13 +144,13 @@ class Game extends React.Component {
         this.setState({
           time: newTime,
           timeInterval: 800,
-          // round: 'roundThree' // uncomment these to only serve short words at beginning, long words at end
+          round: 'roundThree' // uncomment these to only serve short words at beginning, long words at end
         });
       } else if (newTime > 8) { 
         this.setState({
           time: newTime,
-          timeInterval: 400,
-          round: 'roundThree'
+          timeInterval: 800,
+          round: 'roundOne'
         });
       } else {
         this.setState({
@@ -271,8 +271,8 @@ class Game extends React.Component {
         <Overlay 
           instructions = {this.state.instructions} 
           getReady = {this.getReady} 
-          username = {this.state.username} 
-          handleUserNameChange = {this.handleUserNameChange}
+          username = {this.props.username} 
+          handleUserNameChange = {this.props.handleUserNameChange}
           startGame = {this.startGame}
           prompt = {this.state.prompt}
         />
