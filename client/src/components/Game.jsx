@@ -1,5 +1,6 @@
 import React from 'react';
 import Brick from './Brick.jsx';
+import Overlay from './Overlay.jsx';
 import axios from 'axios';
 
 class Game extends React.Component {
@@ -234,21 +235,14 @@ class Game extends React.Component {
   render() {
     return (
       <div className="game">
-        <div id="overlay">
-          <div>{this.state.instructions.map((line, index) => {
-            // audio effect:
-            playStart();
-            return (<span key={index}>{line}<br></br></span>)
-          })}</div>
-          <div id="crackedegg"></div>
-          <div>
-            {/* "getReady" waits for 2 players, "startGame" (on click) is 1 player */}
-            <form id="starter-form" onSubmit={this.getReady} autoComplete="off">
-              <input id="user-input" placeholder="Who are you?" value={this.props.username} onChange={this.props.handleUserNameChange} autoFocus/>
-            </form>
-          </div>
-          <div id="overlay-start" onClick={this.startGame} className="blinking">{this.state.prompt}</div>
-        </div>
+        <Overlay 
+          instructions = {this.state.instructions} 
+          getReady = {this.getReady} 
+          username = {this.state.username} 
+          handleUserNameChange = {this.handleUserNameChange}
+          startGame = {this.startGame}
+          prompt = {this.state.prompt}
+        />
     
         <div className="timer">
           <h1>{this.state.time}</h1>
