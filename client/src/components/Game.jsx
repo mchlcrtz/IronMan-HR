@@ -1,6 +1,7 @@
 import React from 'react';
 import Brick from './Brick.jsx';
 import Overlay from './Overlay.jsx';
+import Timer from './Timer.jsx'
 import axios from 'axios';
 const io = require('socket.io-client'); 
 const socket = io();
@@ -16,7 +17,6 @@ class Game extends React.Component {
       time: 0,
       timeInterval: 1000,
       round: 'all',
-      instructions: ["Humpty Dumpty sat on a wall,", "Humpty Dumpty had a great fall.", "All the king's horses and all the king's men", "Couldn't put Humpty together again.", "HURRY - KEEP TYPING TO PREVENT HIS DEMISE!"],
       prompt: 'START GAME',
       opponentTime: 0
     }
@@ -143,19 +143,19 @@ class Game extends React.Component {
       if (newTime > 20) {
         this.setState({
           time: newTime,
-          timeInterval: 600,
-          //round: 'roundThree', // uncomment these to only serve short words at beginning, long words at end
+          timeInterval: 800,
+          // round: 'roundThree', // uncomment these to only serve short words at beginning, long words at end
         });
       } else if (newTime > 8) { 
         this.setState({
           time: newTime,
-          timeInterval: 800,
-          //round: 'roundTwo',
+          timeInterval: 400,
+          // round: 'roundTwo',
         });
       } else {
         this.setState({
           time: newTime,
-          //round: 'roundOne',
+          round: 'roundOne',
         });
       }
     }
@@ -173,6 +173,7 @@ class Game extends React.Component {
   // pulls random word from dictionary obj and adds it to words state
   addWord() {
     var availableWords = this.state.dictionary[this.state.round];
+    console.log('Available words',availableWords)
     var newWord = availableWords[Math.floor(Math.random() * availableWords.length)];
     this.setState({
       words: [...this.state.words, newWord]
@@ -276,9 +277,7 @@ class Game extends React.Component {
           prompt = {this.state.prompt}
         />
     
-        <div className="timer">
-          <h1>{this.state.time}</h1>
-        </div>
+        <Timer time = {this.state.time}/>
 
         <div className="board">
           {/* your game: */}
