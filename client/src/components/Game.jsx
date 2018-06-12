@@ -2,6 +2,8 @@ import React from 'react';
 import Brick from './Brick.jsx';
 import Overlay from './Overlay.jsx';
 import axios from 'axios';
+import io from 'socket.io-client';
+const socket = io();
 
 class Game extends React.Component {
   constructor(props) {
@@ -15,7 +17,7 @@ class Game extends React.Component {
       timeInterval: 1000,
       round: 'all',
       instructions: ["Humpty Dumpty sat on a wall,", "Humpty Dumpty had a great fall.", "All the king's horses and all the king's men", "Couldn't put Humpty together again.", "HURRY - KEEP TYPING TO PREVENT HIS DEMISE!"],
-      prompt: 'START GAME',
+      prompt: ['Single Player', 'Multi Player'],
       opponentTime: 0
     }
     
@@ -27,7 +29,24 @@ class Game extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.sendScore = this.sendScore.bind(this);
     this.stopGame = this.stopGame.bind(this);
-   
+    this.choosePlayersMode = this.choosePlayersMode.bind(this);
+
+    var c = io.connect(process.env.PORT, {query: this.state.time})
+    console.log('c', c)
+
+    socket.on('receive words from opponent', (words) => {
+      this.updateOpponentWordList(words);
+    });
+    socket.on('startGame', () => {
+      this.startGame();
+    });
+    socket.on('they lost', (score) => {
+      // this is bad, eventually put a red x over their bricks or something
+      this.setState({
+        opponentTime: score,
+      })
+      document.getElementById('their-game').style.backgroundColor = "red";
+    });
   }
 
   // get words from dictionary and join socket
@@ -40,6 +59,20 @@ class Game extends React.Component {
     }).catch(err => {
       console.error(err);
     });
+    socket.emit('entering room', {
+      room: this.props.room, 
+      username: this.props.username
+    });
+  }
+
+  // sends your words to opponent
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.words.length !== prevState.words.length) {
+      socket.emit('send words to opponent', {
+        room: this.props.room,
+        newWords: this.state.words,
+      }); 
+    }
   }
 
   // leave socket
@@ -50,9 +83,17 @@ class Game extends React.Component {
     });
   }
 
-  // hides starter form and user input, waits for another player to start game
-  getReady(e) {
+  choosePlayersMode(e) {
     e.preventDefault();
+    if(e.target.innerHTML === "Multi Player") {
+      this.getReady();
+    } else {
+      this.startGame();
+    }
+  }
+
+  // hides starter form and user input, waits for another player to start game
+  getReady() {
     document.getElementById('starter-form').disabled = true;
     document.getElementById('user-input').disabled = true;
     this.setState({
@@ -235,13 +276,12 @@ class Game extends React.Component {
   render() {
     return (
       <div className="game">
-        <Overlay 
-          instructions = {this.state.instructions} 
-          getReady = {this.getReady} 
-          username = {this.state.username} 
-          handleUserNameChange = {this.handleUserNameChange}
-          startGame = {this.startGame}
-          prompt = {this.state.prompt}
+        <Overlay
+          instructions={this.state.instructions}
+          prompt={this.state.prompt}
+          choosePlayersMode={this.choosePlayersMode}
+          username={this.state.username}
+          handleUserNameChange={this.props.handleUserNameChange}
         />
     
         <div className="timer">
@@ -261,7 +301,7 @@ class Game extends React.Component {
           </div>
 
           {/* their game: */}
-          {/* <div className="play" id="their-game"> 
+          <div className="play" id="their-game"> 
             {this.state.theirWords.map((word, index) => {
               return <Brick word={word} key={index} />
             })}
@@ -269,7 +309,7 @@ class Game extends React.Component {
             <form autoComplete="off">
               <input value="OPPONENT" />
             </form>
-          </div> */}
+          </div>
         </div>
       </div>
     )
