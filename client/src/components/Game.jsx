@@ -144,13 +144,13 @@ class Game extends React.Component {
         this.setState({
           time: newTime,
           timeInterval: 800,
-          // round: 'roundThree', // uncomment these to only serve short words at beginning, long words at end
+          // round: 'roundThree' // uncomment these to only serve short words at beginning, long words at end
         });
       } else if (newTime > 8) { 
         this.setState({
           time: newTime,
           timeInterval: 400,
-          // round: 'roundTwo',
+          round: 'roundThree'
         });
       } else {
         this.setState({
