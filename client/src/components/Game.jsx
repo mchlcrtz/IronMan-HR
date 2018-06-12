@@ -19,7 +19,8 @@ class Game extends React.Component {
       modeInterval: 700,
       round: 'all',
       prompt: 'START GAME',
-      opponentTime: 0
+      opponentTime: 0,
+      mode: ''
     }
     
     this.getReady = this.getReady.bind(this);
@@ -30,7 +31,7 @@ class Game extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.sendScore = this.sendScore.bind(this);
     this.stopGame = this.stopGame.bind(this);
-    this.handleMode = this.handleMode.bind(this);
+
 
     var c = io.connect(process.env.PORT, {query: this.state.time})
     console.log('c', c)
@@ -83,16 +84,9 @@ class Game extends React.Component {
       username: this.props.username,
     });
   }
-
-  handleMode(e){
-    if(e){
-      this.setState({
-        round: 'roundThree',
-        modeInterval: 1000
-      })
-    }
+  handleMode(mode){
+    console.log(mode)
   }
-
   // hides starter form and user input, waits for another player to start game
   getReady(e) {
     e.preventDefault();
@@ -184,7 +178,6 @@ class Game extends React.Component {
   // pulls random word from dictionary obj and adds it to words state
   addWord() {
     var availableWords = this.state.dictionary[this.state.round];
-    console.log('Available words',availableWords)
     var newWord = availableWords[Math.floor(Math.random() * availableWords.length)];
     this.setState({
       words: [...this.state.words, newWord]
