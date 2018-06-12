@@ -1,6 +1,8 @@
 import React from 'react';
 import Brick from './Brick.jsx';
 import axios from 'axios';
+import io from 'socket.io-client';
+const socket = io();
 
 class Game extends React.Component {
   constructor(props) {
@@ -26,7 +28,23 @@ class Game extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.sendScore = this.sendScore.bind(this);
     this.stopGame = this.stopGame.bind(this);
-   
+
+    var c = io.connect(process.env.PORT, {query: this.state.time})
+    console.log('c', c)
+
+    socket.on('receive words from opponent', (words) => {
+      this.updateOpponentWordList(words);
+    });
+    socket.on('startGame', () => {
+      this.startGame();
+    });
+    socket.on('they lost', (score) => {
+      // this is bad, eventually put a red x over their bricks or something
+      this.setState({
+        opponentTime: score,
+      })
+      document.getElementById('their-game').style.backgroundColor = "red";
+    });
   }
 
   // get words from dictionary and join socket
@@ -39,6 +57,20 @@ class Game extends React.Component {
     }).catch(err => {
       console.error(err);
     });
+    socket.emit('entering room', {
+      room: this.props.room, 
+      username: this.props.username
+    });
+  }
+
+  // sends your words to opponent
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.words.length !== prevState.words.length) {
+      socket.emit('send words to opponent', {
+        room: this.props.room,
+        newWords: this.state.words,
+      }); 
+    }
   }
 
   // leave socket
@@ -267,7 +299,7 @@ class Game extends React.Component {
           </div>
 
           {/* their game: */}
-          {/* <div className="play" id="their-game"> 
+          <div className="play" id="their-game"> 
             {this.state.theirWords.map((word, index) => {
               return <Brick word={word} key={index} />
             })}
@@ -275,7 +307,7 @@ class Game extends React.Component {
             <form autoComplete="off">
               <input value="OPPONENT" />
             </form>
-          </div> */}
+          </div>
         </div>
       </div>
     )

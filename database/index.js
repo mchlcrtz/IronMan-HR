@@ -73,7 +73,6 @@ var get1000Words = (callback) => {
     dictionary.roundOne = dictionary.roundOne.slice(0, 400);
     dictionary.roundTwo = dictionary.roundTwo.slice(0, 300);
     dictionary.roundThree = dictionary.roundThree.slice(0, 300);
-
     callback(dictionary);
   });
 }
