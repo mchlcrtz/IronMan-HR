@@ -2,7 +2,7 @@ import React from 'react';
 
 const Brick = (props) => {
   return (
-    <div className="brick">
+    <div className={`brick ${props.powerup}`}>
       <p>{props.word}</p>
     </div>
   )

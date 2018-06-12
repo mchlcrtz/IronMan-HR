@@ -180,3 +180,35 @@ input {
 .sbHeader{
   margin-left: 70px
 }
+
+.power0 {
+  color: green;
+}
+
+.power1 {
+  color: red;
+}
+
+.power2 {
+  color: blue;
+}
+
+.powerup {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border: 1px solid black;
+  margin: 2px;
+}
+
+#power-bank .power0{
+  background-color: green;
+}
+
+#power-bank .power1 {
+  background-color: red;
+}
+
+#power-bank .power2 {
+  background-color: blue;
+}
