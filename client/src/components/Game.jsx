@@ -3,6 +3,9 @@ import Brick from './Brick.jsx';
 import Overlay from './Overlay.jsx';
 import Timer from './Timer.jsx'
 import axios from 'axios';
+import PowerBank from './PowerBank.jsx';
+
+import { EEXIST } from 'constants';
 const io = require('socket.io-client'); 
 const socket = io();
 
@@ -20,7 +23,12 @@ class Game extends React.Component {
       round: 'all',
       prompt: 'START GAME',
       opponentTime: 0,
+<<<<<<< HEAD
       mode: 'easy'
+=======
+      powerups: {},
+      bankedPowers: []
+>>>>>>> dev
     }
     
     this.getReady = this.getReady.bind(this);
@@ -34,6 +42,15 @@ class Game extends React.Component {
     this.handleMode = this.handleMode.bind(this)
 
 
+    this.pauseGame = this.pauseGame.bind(this);
+    this.removeWords = this.removeWords.bind(this);
+    this.shuffleArray = this.shuffleArray.bind(this);
+    this.switchWords = this.switchWords.bind(this);
+
+    this.removeAllWords = this.removeAllWords.bind(this);
+    this.stopAll = this.stopAll.bind(this);
+    this.usePower = this.usePower.bind(this);
+    this.addPower = this.addPower.bind(this);
     var c = io.connect(process.env.PORT, {query: this.state.time})
     console.log('c', c)
 
@@ -182,6 +199,7 @@ class Game extends React.Component {
   addWord() {
     var availableWords = this.state.dictionary[this.state.round];
     var newWord = availableWords[Math.floor(Math.random() * availableWords.length)];
+    this.addPower(newWord);
     this.setState({
       words: [...this.state.words, newWord]
     });
@@ -206,17 +224,39 @@ class Game extends React.Component {
     e.preventDefault();
     var submittedWord = this.state.userInput;
     var index = this.state.words.indexOf(submittedWord);
-    
+    var powerups;
+    var deposit;
     // check if what they typed is in our "words" array
     // flash green for a correctly typed word and remove word from "words" array
     if (index !== -1) {
+    
       document.getElementById('typing-input').style.backgroundColor = "green";
       var newWords = this.state.words.slice();
       newWords.splice(index, 1);
-      playCorrect(); 
-      this.setState({
-        words: newWords,
-      });
+      playCorrect();
+
+      if(this.state.powerups[submittedWord] != undefined){
+        powerups = Object.assign({}, this.state.powerups);
+        deposit = powerups[submittedWord];
+        delete powerups[submittedWord];
+    
+        if(this.state.bankedPowers.length != 0){
+          deposit = [...this.state.bankedPowers, deposit]
+        } else {
+          deposit = [deposit];
+        }
+
+        this.setState({
+          words: newWords,
+          bankedPowers: deposit,
+          powerups: powerups
+        });
+
+      } else { 
+        this.setState({
+          words: newWords,
+        });
+      }
     } else {
       // else flash red for a mistyped word
       playWrong(); 
@@ -272,6 +312,107 @@ class Game extends React.Component {
       prompt: 'REPLAY',
     });
   }
+  
+  //ADDED FOR POWERUPS
+  pauseGame(){
+    var previousInterval = this.state.timeInterval;
+    setInterval(()=>{
+      this.setState({
+        timeInterval: previousInterval
+      });
+    },5000);
+    this.setState({
+      timeInterval: 5000
+    });
+  }
+
+  shuffleArray(arr){
+    var current = arr.length;
+    var temp;
+    var rand;
+
+    while(current !== 0){
+      rand = Math.floor(Math.random() * current);
+      current--;
+      temp = arr[current];
+      arr[current] = arr[rand];
+      arr[rand] = temp;
+    }  
+    return arr;
+  }
+
+  removeWords(num){
+    var removeWords = this.state.words.slice();
+    var half = Math.floor(removeWords.length/2);
+    removeWords = this.shuffleArray(removeWords);
+    removeWords = removeWords.slice(0, half);
+    this.setState({
+      words: removeWords
+    });
+  }
+
+  switchWords(){
+    var list = this.state.words.slice();
+    list.pop();
+    list.push("aaa");
+    this.setState({
+      words: list
+    });
+  }
+  removeAllWords(num){
+    this.setState({
+      words: []
+    });
+  }
+  usePower(e){
+    var temp;
+    var banked;
+    if(e.keyCode === 32){
+      temp = e.target.value;
+      temp = temp.substring(0, temp.length-1);
+     
+      if(this.state.bankedPowers[0] != undefined){
+        if(this.state.bankedPowers[0] === 'power0'){
+          this.removeAllWords();
+        } else if(this.state.bankedPowers[0] === 'power1'){
+          this.pauseGame();
+        } else if(this.state.bankedPowers[0] === 'power2'){
+          this.removeWords();
+        }
+        banked = this.state.bankedPowers.slice();
+        banked.shift(); 
+      }
+      this.setState({
+        userInput: temp,
+        bankedPowers: banked
+      })
+    }
+  }
+
+  addPower(word){
+    var chance = 8; //1 in chance
+    var rand = Math.floor(Math.random() * chance) + 1;
+    var current;
+    if(rand === 1){
+      if(Object.keys(this.state.powerups).length === 0){
+        current = {};
+      } else {
+        current = this.state.powerups;
+      }
+
+      current[word] = "power" + Math.floor(Math.random() * 3);
+      this.setState({
+        powerups: current
+      })
+    }
+  }
+
+  stopAll(){
+    this.setState({
+      timeInterval: 100000
+    });
+  }
+  //END OF POWERUPS
 
   render() {
     return (
@@ -286,19 +427,42 @@ class Game extends React.Component {
           handleMode = {this.handleMode}
         />
     
+<<<<<<< HEAD
         <Timer time = {this.state.time}/>
+=======
+        <div className="timer">
+          <h1>{this.state.time}</h1>
+          {/*<h4>GOD MODE</h4><button id='button-stopall' onClick={this.stopAll}>STOPALL</button>
+          <button id='button-pause' onClick={this.pauseGame}>PAUSE</button>
+          <button id='button-removeWords' onClick={()=>this.removeWords(3)}>REMOVE</button>
+        <button id='button-switchWords' onClick={this.switchWords}>SWITCH</button>*/}
+        </div>
+>>>>>>> dev
 
         <div className="board">
           {/* your game: */}
           <div className="play"> 
             {this.state.words.map((word, index) => {
-              return <Brick word={word} key={index} />
+              return <Brick word={word} key={index} powerup={this.state.powerups[word] ? this.state.powerups[word] : ""}/>
             })}
             <div id="gudetama"></div>
             <form onSubmit={this.handleSubmit} autoComplete="off">
-              <input id="typing-input" value={this.state.userInput} onChange={this.handleChange} />
+              <input id="typing-input" type='text' value={this.state.userInput} onChange={this.handleChange} onKeyUp={this.usePower}/>
             </form>
           </div>
+
+          <div id="power-bank">
+            <h5>Powers:</h5>
+            {this.state.bankedPowers.map((powerup, index)=>{
+              return <PowerBank key={index} powerup={powerup} />
+            })}
+            <div id='legend'>
+              <div className='power1'>Pause (5s)</div>
+              <div className='power2'>Remove 1/2</div>
+              <div className='power0'>Remove All</div>
+            </div>
+          </div>
+        
 
           {/* their game: */}
           <div className="play" id="their-game"> 
