@@ -180,3 +180,58 @@ input {
 .sbHeader{
   margin-left: 70px
 }
+
+.power0 {
+  color: green;
+}
+
+.power1 {
+  color: red;
+}
+
+.power2 {
+  color: blue;
+}
+
+.powerup {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border: 1px solid black;
+  margin: 2px;
+}
+
+#power-bank {
+  width: 125px;
+}
+#power-bank .power0{
+  background-color: green;
+}
+
+#power-bank .power1 {
+  background-color: red;
+}
+
+#power-bank .power2 {
+  background-color: blue;
+}
+
+#power-bank #legend .power0{
+  background-color: green;  
+
+}
+#power-bank #legend .power1 {
+  background-color: red;
+
+}
+#power-bank #legend .power2 {
+  background-color: blue;
+
+}
+
+#power-bank #legend div{
+  width: 120px;
+  padding: 1px;
+  color: white;
+  font-size: 9px;
+}
