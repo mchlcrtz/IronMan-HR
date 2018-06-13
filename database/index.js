@@ -126,7 +126,14 @@ const addUserOrUpdateScore = function(userWithScore, callback) {
             console.error('error updating high score', err);
           } else if (result.changedRows === 0){
             // if you get to this point, the user has a highscore in the same mode higher than entered
-            callback('checked, but didnt beat personal best');
+            let queryStr4 = `INSERT INTO users (username, high_score, mode) VALUES ('${userWithScore.username}', ${userWithScore.high_score}, '${userWithScore.mode}')`;
+            connection.query(queryStr4, (err) => {
+              if (err) {
+                console.error('error inserting high score into DB with New Mode', err);
+              } else {
+                callback('inserted user into db with New Mode');
+              }
+            });
           } else {
             callback('updated high score');
           }
