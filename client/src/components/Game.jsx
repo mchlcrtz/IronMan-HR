@@ -20,7 +20,7 @@ class Game extends React.Component {
       round: 'all',
       prompt: 'START GAME',
       opponentTime: 0,
-      mode: ''
+      mode: 'easy'
     }
     
     this.getReady = this.getReady.bind(this);
@@ -31,6 +31,7 @@ class Game extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.sendScore = this.sendScore.bind(this);
     this.stopGame = this.stopGame.bind(this);
+    this.handleMode = this.handleMode.bind(this)
 
 
     var c = io.connect(process.env.PORT, {query: this.state.time})
@@ -86,6 +87,7 @@ class Game extends React.Component {
   }
   handleMode(mode){
     console.log(mode)
+    this.setState({mode})
   }
   // hides starter form and user input, waits for another player to start game
   getReady(e) {
@@ -230,10 +232,11 @@ class Game extends React.Component {
   }
 
   // upon game over, sends username and score to database to be added/updated
-  sendScore(username, score) {
+  sendScore(username, score, mode) {
     axios.post('/wordgame', {
       "username": username,
-      "high_score": score
+      "high_score": score,
+      "mode": mode
     })
     .then(result => {
       console.log(result);
@@ -257,7 +260,7 @@ class Game extends React.Component {
       }
     }, 2000);
     
-    this.sendScore(this.props.username, this.state.time);
+    this.sendScore(this.props.username, this.state.time,this.state.mode);
  
     // audio effect
     playGameOver();

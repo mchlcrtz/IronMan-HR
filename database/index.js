@@ -110,7 +110,7 @@ const addUserOrUpdateScore = function(userWithScore, callback) {
     } else {
       if (result.length === 0) {
         // if new user, add them to the database
-        let queryStr2 = `INSERT INTO users (username, high_score) VALUES ('${userWithScore.username}', ${userWithScore.high_score})`;
+        let queryStr2 = `INSERT INTO users (username, high_score, mode) VALUES ('${userWithScore.username}', ${userWithScore.high_score}, '${userWithScore.mode}')`;
         connection.query(queryStr2, (err) => {
           if (err) {
             console.error('error inserting high score into DB', err);
@@ -120,7 +120,7 @@ const addUserOrUpdateScore = function(userWithScore, callback) {
         });
       } else {
         // else only update if user beat their personal best score
-        let queryStr3 = `UPDATE users SET high_score = ${userWithScore.high_score} WHERE username='${userWithScore.username}' AND high_score < ${userWithScore.high_score}`;
+        let queryStr3 = `UPDATE users SET high_score = ${userWithScore.high_score} WHERE username='${userWithScore.username}' AND high_score < ${userWithScore.high_score} AND mode = '${userWithScore.mode}'`;
         connection.query(queryStr3, (err, result) => {
           if (err) {
             console.error('error updating high score', err);
