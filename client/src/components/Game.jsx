@@ -138,7 +138,6 @@ class Game extends React.Component {
       if (this.state.words.length >= 20) {
         clearTimeout(step);
         //console.log('opponent time',this.state.time)
-        console.log('REACT losing...');
         socket.emit('i lost', {
           room: this.props.room, 
           username: this.props.username, 
@@ -378,7 +377,7 @@ class Game extends React.Component {
   }
 
   addPower(word){
-    var chance = 4;
+    var chance = 8; //1 in chance
     var rand = Math.floor(Math.random() * chance) + 1;
     var current;
     if(rand === 1){
@@ -387,6 +386,7 @@ class Game extends React.Component {
       } else {
         current = this.state.powerups;
       }
+
       current[word] = "power" + Math.floor(Math.random() * 3);
       this.setState({
         powerups: current
@@ -422,7 +422,7 @@ class Game extends React.Component {
     
         <div className="timer">
           <h1>{this.state.time}</h1>
-          {/*<button id='button-stopall' onClick={this.stopAll}>STOPALL</button>
+          {/*<h4>GOD MODE</h4><button id='button-stopall' onClick={this.stopAll}>STOPALL</button>
           <button id='button-pause' onClick={this.pauseGame}>PAUSE</button>
           <button id='button-removeWords' onClick={()=>this.removeWords(3)}>REMOVE</button>
         <button id='button-switchWords' onClick={this.switchWords}>SWITCH</button>*/}
