@@ -7,7 +7,8 @@ class Scoreboard extends React.Component {
     this.state = {
       highscore: [], 
       rank: ['1ST', '2ND', '3RD', '4TH', '5TH', '1ST', '2ND', '3RD', '4TH', '5TH'],
-      counter: 0
+      counter: 0,
+      mode: 'easy'
     } 
     this.updateScoreboard = this.updateScoreboard.bind(this);
   }

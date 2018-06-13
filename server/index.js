@@ -83,7 +83,7 @@ io.on('connection', (socket) => {
 
   socket.on('i lost', (data) => {
     socket.broadcast.to(data.room).emit('they lost', data.score);
-    rooms[data.room][data.username] = 0;
+    // rooms[data.room][data.username] = 0;
     console.log('i lost, rooms is', rooms);
   });
 
