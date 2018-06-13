@@ -138,6 +138,7 @@ class Game extends React.Component {
       if (this.state.words.length >= 20) {
         clearTimeout(step);
         //console.log('opponent time',this.state.time)
+        console.log('REACT losing...');
         socket.emit('i lost', {
           room: this.props.room, 
           username: this.props.username, 
