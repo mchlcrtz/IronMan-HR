@@ -104,6 +104,7 @@ var get1000Words = (callback) => {
 // retrieve top 10 users and their high scores
 const retrieveUsers = function({mode},callback) {
   let queryStr = `SELECT * FROM users WHERE mode = '${mode}' ORDER BY high_score DESC LIMIT 5`;
+  // let queryStr = `SELECT * FROM users`;
   connection.query(queryStr, (err, data) => {
     if (err) {
       console.log('DB: error retrieving users', err);
@@ -124,7 +125,7 @@ const retrieveUsers = function({mode},callback) {
 
 //check if a user has played before, and add or update accordingly
 const addUserOrUpdateScore = function(userWithScore, callback) {
-  let queryStr = `SELECT * FROM users WHERE username = '${userWithScore.username}'`;
+  let queryStr = `SELECT * FROM users WHERE username = '${userWithScore.username}' and mode = '${userWithScore.mode}'`;
   connection.query(queryStr, (err, result) => {
     if (err) {
       console.error('error retrieving user from database', err);
@@ -141,29 +142,13 @@ const addUserOrUpdateScore = function(userWithScore, callback) {
         });
       } else {
         // else only update if user beat their personal best score in same mode
-        let queryStr3 = `UPDATE users SET high_score = ${userWithScore.high_score} WHERE username='${userWithScore.username}' AND high_score < ${userWithScore.high_score} AND mode = '${userWithScore.mode}'`;
+        let queryStr3 = `UPDATE users SET high_score = ${userWithScore.high_score} WHERE username='${userWithScore.username}' AND high_score <= ${userWithScore.high_score} AND mode = '${userWithScore.mode}'`;
         connection.query(queryStr3, (err, result) => {
+          console.log('Updating existing user')
           if (err) {
             console.error('error updating high score', err);
           } else if (result.changedRows === 0){
-            // let queryStr4 = `INSERT INTO users (username, high_score, mode) VALUES ('${userWithScore.username}', ${userWithScore.high_score}, '${userWithScore.mode}')`;
-            let queryStr4 = `SELECT * FROM users WHERE username = '${userWithScore.username}' AND high_score > ${userWithScore.high_score} AND mode != '${userWithScore.mode}'`;
-            connection.query(queryStr4, (err,result) => {
-              if (err) {
-                console.error('Error retrieving user from database with score and mode', err);
-              } else if(result.length){
-                let queryStr5 = `INSERT INTO users (username, high_score, mode) VALUES ('${userWithScore.username}', ${userWithScore.high_score}, '${userWithScore.mode}')`;
-                connection.query(queryStr5, (err, result) => {
-                  if(err){
-                    console.error('Error inserting highscore into DB with New Mode')
-                  } else {
-                    callback('Inserted new User with new mode')
-                  }
-                })
-              } else {
-                callback(result);
-              }
-            })
+            callback('Did not update score')
           } else {
             callback('updated high score');
           }
