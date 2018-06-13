@@ -39,6 +39,7 @@ class Game extends React.Component {
     this.shuffleArray = this.shuffleArray.bind(this);
     this.switchWords = this.switchWords.bind(this);
 
+    this.removeAllWords = this.removeAllWords.bind(this);
     this.stopAll = this.stopAll.bind(this);
     this.usePower = this.usePower.bind(this);
     this.addPower = this.addPower.bind(this);
@@ -345,7 +346,11 @@ class Game extends React.Component {
       words: list
     });
   }
-  
+  removeAllWords(num){
+    this.setState({
+      words: []
+    });
+  }
   usePower(e){
     var temp;
     var banked;
@@ -355,11 +360,11 @@ class Game extends React.Component {
      
       if(this.state.bankedPowers[0] != undefined){
         if(this.state.bankedPowers[0] === 'power0'){
-          this.removeWords(3);
+          this.removeAllWords();
         } else if(this.state.bankedPowers[0] === 'power1'){
-          this.switchWords();
-        } else if(this.state.bankedPowers[0] === 'power2'){
           this.pauseGame();
+        } else if(this.state.bankedPowers[0] === 'power2'){
+          this.removeWords();
         }
         banked = this.state.bankedPowers.slice();
         banked.shift(); 
@@ -394,7 +399,7 @@ class Game extends React.Component {
     });
   }
   //END OF POWERUPS
-  
+
   render() {
     return (
       <div className="game">
@@ -439,7 +444,13 @@ class Game extends React.Component {
             {this.state.bankedPowers.map((powerup, index)=>{
               return <PowerBank key={index} powerup={powerup} />
             })}
+            <div id='legend'>
+              <div className='power1'>Pause (5s)</div>
+              <div className='power2'>Remove 1/2</div>
+              <div className='power0'>Remove All</div>
+            </div>
           </div>
+        
 
           {/* their game: */}
           <div className="play" id="their-game"> 
