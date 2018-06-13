@@ -61,7 +61,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on('leaving room', (data) => {
+    console.log('leaving rooms...');
     socket.leave(data.room);
+    console.log('leaving-rooms', rooms);
     rooms[data.room][data.username] = 0;
     if (getPlayerCount(data.room) === 0) {
       delete rooms[data.room];
@@ -81,8 +83,10 @@ io.on('connection', (socket) => {
   });
 
   socket.on('i lost', (data) => {
+    console.log('losing...');
     socket.broadcast.to(data.room).emit('they lost', data.score);
-    rooms[data.room][data.username] = 0;
+    console.log('rooms:', rooms);
+    //rooms[data.room][data.username] = 0;
     console.log('i lost, rooms is', rooms);
   });
 

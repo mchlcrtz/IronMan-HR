@@ -2,11 +2,32 @@ const mysql = require('mysql');
 const fs = require('fs');
 const path = require('path');
 
+var credentials = process.env.host;
+if(credentials === undefined){
+  credentials = require('./../config.js');
+} else {
+  credentials = {
+    host: process.env.host,
+    user: process.env.user,
+    password: process.env.password,
+    database: process.env.database
+  }
+}
+
+// const connection = mysql.createConnection({
+//   host: 'ironman.crb3zmhwoovo.us-east-1.rds.amazonaws.com',
+//   user: 'IronMan', 
+//   password: 'IronMan-HR', 
+//   database: 'humptydumpty',
+//   port: 3306,
+//   timeout: 6000,
+// });
+
 const connection = mysql.createConnection({
-  host: 'ironman.crb3zmhwoovo.us-east-1.rds.amazonaws.com',
-  user: 'IronMan', 
-  password: 'IronMan-HR', 
-  database: 'humptydumpty',
+  host: credentials.host,
+  user: credentials.user,
+  password: credentials.password, 
+  database: credentials.database,
   port: 3306,
   timeout: 6000,
 });
