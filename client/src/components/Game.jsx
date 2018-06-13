@@ -23,12 +23,9 @@ class Game extends React.Component {
       round: 'all',
       prompt: 'START GAME',
       opponentTime: 0,
-<<<<<<< HEAD
-      mode: 'easy'
-=======
+      mode: 'easy',
       powerups: {},
       bankedPowers: []
->>>>>>> dev
     }
     
     this.getReady = this.getReady.bind(this);
@@ -427,17 +424,7 @@ class Game extends React.Component {
           handleMode = {this.handleMode}
         />
     
-<<<<<<< HEAD
         <Timer time = {this.state.time}/>
-=======
-        <div className="timer">
-          <h1>{this.state.time}</h1>
-          {/*<h4>GOD MODE</h4><button id='button-stopall' onClick={this.stopAll}>STOPALL</button>
-          <button id='button-pause' onClick={this.pauseGame}>PAUSE</button>
-          <button id='button-removeWords' onClick={()=>this.removeWords(3)}>REMOVE</button>
-        <button id='button-switchWords' onClick={this.switchWords}>SWITCH</button>*/}
-        </div>
->>>>>>> dev
 
         <div className="board">
           {/* your game: */}

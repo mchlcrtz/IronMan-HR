@@ -9,6 +9,7 @@ app.use(bodyParser.json());
 
 // querying all users and scores from the database 
 app.get('/wordgame', (req, res) => { 
+  console.log('request', req.body,req.params, req.query)
   retrieveUsers((data) => {
     res.send(data);
   });
@@ -64,12 +65,7 @@ io.on('connection', (socket) => {
   socket.on('leaving room', (data) => {
     console.log('leaving rooms...');
     socket.leave(data.room);
-<<<<<<< HEAD
     // rooms[data.room][data.username] = 0;
-=======
-    console.log('leaving-rooms', rooms);
-    rooms[data.room][data.username] = 0;
->>>>>>> dev
     if (getPlayerCount(data.room) === 0) {
       delete rooms[data.room];
     }
@@ -90,12 +86,7 @@ io.on('connection', (socket) => {
   socket.on('i lost', (data) => {
     console.log('losing...');
     socket.broadcast.to(data.room).emit('they lost', data.score);
-<<<<<<< HEAD
     // rooms[data.room][data.username] = 0;
-=======
-    console.log('rooms:', rooms);
-    //rooms[data.room][data.username] = 0;
->>>>>>> dev
     console.log('i lost, rooms is', rooms);
   });
 
