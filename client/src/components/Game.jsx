@@ -103,9 +103,7 @@ class Game extends React.Component {
     this.setState({mode}, 
       () => this.props.handleMode(mode))
   }
-  updateScoreboard () {
-    
-  }
+
   // hides starter form and user input, waits for another player to start game
   getReady(e) {
     e.preventDefault();
@@ -200,7 +198,6 @@ class Game extends React.Component {
       timeInterval: 1000,
       userInput: '',
     }, () => go());
-  
   }
 
   // pulls random word from dictionary obj and adds it to words state
@@ -288,6 +285,7 @@ class Game extends React.Component {
       "mode": mode
     })
     .then(result => {
+      this.props.updateScoreboard()
       console.log(result);
     }).catch(err => {
       console.error(err);
@@ -308,7 +306,6 @@ class Game extends React.Component {
         document.getElementById('user-input').focus();
       }
     }, 2000);
-    
     this.sendScore(this.props.username, this.state.time,this.state.mode);
  
     // audio effect

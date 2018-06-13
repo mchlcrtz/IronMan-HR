@@ -104,8 +104,7 @@ var get1000Words = (callback) => {
 // retrieve top 10 users and their high scores
 const retrieveUsers = function({mode},callback) {
   let queryStr = `SELECT * FROM users WHERE mode = '${mode}' ORDER BY high_score DESC LIMIT 5`;
-  // let queryStr = `SELECT * FROM users`;
-  connection.query(queryStr, (err, data) => {
+    connection.query(queryStr, (err, data) => {
     if (err) {
       console.log('DB: error retrieving users', err);
     } else {
@@ -144,7 +143,6 @@ const addUserOrUpdateScore = function(userWithScore, callback) {
         // else only update if user beat their personal best score in same mode
         let queryStr3 = `UPDATE users SET high_score = ${userWithScore.high_score} WHERE username='${userWithScore.username}' AND high_score <= ${userWithScore.high_score} AND mode = '${userWithScore.mode}'`;
         connection.query(queryStr3, (err, result) => {
-          console.log('Updating existing user')
           if (err) {
             console.error('error updating high score', err);
           } else if (result.changedRows === 0){
@@ -157,12 +155,6 @@ const addUserOrUpdateScore = function(userWithScore, callback) {
     }
   })  
 }
-
-// Below are tests to make sure database is working:
-//addUserOrUpdateScore({username: 'scott', high_score: 200});
-//addUserOrUpdateScore({username: 'egg', high_score: 99});
-//addUserOrUpdateScore({username: 'gudetama', high_score: 1000000});
-//retrieveUsers(results => {console.log(results)});
 
 //export all database functions here 
 module.exports = {

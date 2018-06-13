@@ -58,6 +58,7 @@ class App extends React.Component {
           room={this.state.room} 
           username={this.state.username} handleUserNameChange={this.handleUserNameChange}
           mode = {this.state.mode} handleMode = {this.handleMode}
+          updateScoreboard = {this.updateScoreboard}
           />
           <Scoreboard mode = {this.state.mode} scores = {this.state.scores}/>
         </div>
