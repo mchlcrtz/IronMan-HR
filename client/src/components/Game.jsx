@@ -164,6 +164,15 @@ class Game extends React.Component {
       // updates the time and speeds up the game accordingly 
       // (as timeInterval decreases, words appear at a faster rate)
       var newTime = this.state.time + 1;
+      if(this.state.mode === 'easy') {
+        this.setState({round: 'roundOne'})
+      }
+      if(this.state.mode === 'medium') {
+        this.setState({round: 'roundTwo'})
+      }
+      if(this.state.mode === 'hard') {
+        this.setState({round: 'roundThree'})
+      }
       if (newTime > 20) {
         this.setState({
           time: newTime,
