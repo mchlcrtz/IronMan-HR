@@ -2,35 +2,35 @@ const mysql = require('mysql');
 const fs = require('fs');
 const path = require('path');
 
-var credentials = process.env.host;
-if(credentials === undefined){
-  credentials = require('./../config.js');
-} else {
-  credentials = {
-    host: process.env.host,
-    user: process.env.user,
-    password: process.env.password,
-    database: process.env.database
-  }
-}
-
-// const connection = mysql.createConnection({
-//   host: 'ironman.crb3zmhwoovo.us-east-1.rds.amazonaws.com',
-//   user: 'IronMan', 
-//   password: 'IronMan-HR', 
-//   database: 'humptydumpty',
-//   port: 3306,
-//   timeout: 6000,
-// });
+// var credentials = process.env.host;
+// if(credentials === undefined){
+//   credentials = require('./../config.js');
+// } else {
+//   credentials = {
+//     host: process.env.host,
+//     user: process.env.user,
+//     password: process.env.password,
+//     database: process.env.database
+//   }
+// }
 
 const connection = mysql.createConnection({
-  host: credentials.host,
-  user: credentials.user,
-  password: credentials.password, 
-  database: credentials.database,
+  host: 'ironman.crb3zmhwoovo.us-east-1.rds.amazonaws.com',
+  user: 'IronMan', 
+  password: 'IronMan-HR', 
+  database: 'humptydumpty',
   port: 3306,
   timeout: 6000,
 });
+
+// const connection = mysql.createConnection({
+//   host: credentials.host,
+//   user: credentials.user,
+//   password: credentials.password, 
+//   database: credentials.database,
+//   port: 3306,
+//   timeout: 6000,
+// });
 
 connection.connect(function(err) {
   if (err) {
@@ -102,9 +102,10 @@ var get1000Words = (callback) => {
 //FUNCTIONS TO INTERACT WITH DATABASE:
 
 // retrieve top 10 users and their high scores
-const retrieveUsers = function(mode,callback) {
-  // let queryStr = `SELECT * FROM users WHERE mode = ${mode} ORDER BY high_score DESC LIMIT 5`;
-  let queryStr = `SELECT * FROM users WHERE mode = ${mode} ORDER BY high_score DESC`;
+const retrieveUsers = function({mode},callback) {
+  console.log(mode)
+  let queryStr = `SELECT * FROM users WHERE mode = '${mode}' ORDER BY high_score DESC LIMIT 5`;
+  // let queryStr = `SELECT * FROM users WHERE mode = 'easy' ORDER BY high_score DESC`;
 
   // let queryStr = `SELECT * FROM users ORDER BY high_score DESC`;
 
