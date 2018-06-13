@@ -1,5 +1,7 @@
 import React from 'react';
 import Brick from './Brick.jsx';
+import Overlay from './Overlay.jsx';
+import Timer from './Timer.jsx'
 import axios from 'axios';
 import PowerBank from './PowerBank.jsx';
 
@@ -17,10 +19,11 @@ class Game extends React.Component {
       theirWords: [],
       time: 0,
       timeInterval: 1000,
+      modeInterval: 700,
       round: 'all',
-      instructions: ["Humpty Dumpty sat on a wall,", "Humpty Dumpty had a great fall.", "All the king's horses and all the king's men", "Couldn't put Humpty together again.", "HURRY - KEEP TYPING TO PREVENT HIS DEMISE!"],
       prompt: 'START GAME',
       opponentTime: 0,
+      mode: 'easy',
       powerups: {},
       bankedPowers: []
     }
@@ -33,6 +36,8 @@ class Game extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.sendScore = this.sendScore.bind(this);
     this.stopGame = this.stopGame.bind(this);
+    this.handleMode = this.handleMode.bind(this)
+
 
     this.pauseGame = this.pauseGame.bind(this);
     this.removeWords = this.removeWords.bind(this);
@@ -94,7 +99,11 @@ class Game extends React.Component {
       username: this.props.username,
     });
   }
-
+  handleMode(mode){
+    console.log(mode)
+    this.setState({mode}, 
+      () => this.props.handleMode(mode))
+  }
   // hides starter form and user input, waits for another player to start game
   getReady(e) {
     e.preventDefault();
@@ -156,19 +165,19 @@ class Game extends React.Component {
       if (newTime > 20) {
         this.setState({
           time: newTime,
-          timeInterval: 600,
-          //round: 'roundThree', // uncomment these to only serve short words at beginning, long words at end
+          timeInterval: this.state.modeInterval,
+          // round: 'roundThree' // uncomment these to only serve short words at beginning, long words at end
         });
       } else if (newTime > 8) { 
         this.setState({
           time: newTime,
-          timeInterval: 800,
-          //round: 'roundTwo',
+          timeInterval: this.state.modeInterval,
+          // round: 'roundOne'
         });
       } else {
         this.setState({
           time: newTime,
-          //round: 'roundOne',
+          // round: 'roundOne',
         });
       }
     }
@@ -261,10 +270,11 @@ class Game extends React.Component {
   }
 
   // upon game over, sends username and score to database to be added/updated
-  sendScore(username, score) {
+  sendScore(username, score, mode) {
     axios.post('/wordgame', {
       "username": username,
-      "high_score": score
+      "high_score": score,
+      "mode": mode
     })
     .then(result => {
       console.log(result);
@@ -288,7 +298,7 @@ class Game extends React.Component {
       }
     }, 2000);
     
-    this.sendScore(this.props.username, this.state.time);
+    this.sendScore(this.props.username, this.state.time,this.state.mode);
  
     // audio effect
     playGameOver();
@@ -404,29 +414,17 @@ class Game extends React.Component {
   render() {
     return (
       <div className="game">
-        <div id="overlay">
-          <div>{this.state.instructions.map((line, index) => {
-            // audio effect:
-            playStart();
-            return (<span key={index}>{line}<br></br></span>)
-          })}</div>
-          <div id="crackedegg"></div>
-          <div>
-            {/* "getReady" waits for 2 players, "startGame" (on click) is 1 player */}
-            <form id="starter-form" onSubmit={this.getReady} autoComplete="off">
-              <input id="user-input" placeholder="Who are you?" value={this.props.username} onChange={this.props.handleUserNameChange} autoFocus/>
-            </form>
-          </div>
-          <div id="overlay-start" onClick={this.startGame} className="blinking">{this.state.prompt}</div>
-        </div>
+        <Overlay 
+          instructions = {this.state.instructions} 
+          getReady = {this.getReady} 
+          username = {this.props.username} 
+          handleUserNameChange = {this.props.handleUserNameChange}
+          startGame = {this.startGame}
+          prompt = {this.state.prompt}
+          handleMode = {this.handleMode}
+        />
     
-        <div className="timer">
-          <h1>{this.state.time}</h1>
-          {/*<h4>GOD MODE</h4><button id='button-stopall' onClick={this.stopAll}>STOPALL</button>
-          <button id='button-pause' onClick={this.pauseGame}>PAUSE</button>
-          <button id='button-removeWords' onClick={()=>this.removeWords(3)}>REMOVE</button>
-        <button id='button-switchWords' onClick={this.switchWords}>SWITCH</button>*/}
-        </div>
+        <Timer time = {this.state.time}/>
 
         <div className="board">
           {/* your game: */}
