@@ -124,7 +124,8 @@ const addUserOrUpdateScore = function(userWithScore, callback) {
         connection.query(queryStr3, (err, result) => {
           if (err) {
             console.error('error updating high score', err);
-          } else if (result.changedRows === 0) {
+          } else if (result.changedRows === 0){
+            // if you get to this point, the user has a highscore in the same mode higher than entered
             callback('checked, but didnt beat personal best');
           } else {
             callback('updated high score');
