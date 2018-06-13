@@ -2,7 +2,7 @@ const mysql = require('mysql');
 const fs = require('fs');
 const path = require('path');
 
-const credentials = process.env.host;
+var credentials = process.env.host;
 if(credentials === undefined){
   credentials = require('./../config.js');
 } else {
