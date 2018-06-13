@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Game from './components/Game.jsx';
 import Scoreboard from './components/Scoreboard.jsx';
+import axios from 'axios'
 
 class App extends React.Component {
   constructor(props) {
@@ -9,15 +10,17 @@ class App extends React.Component {
     this.state = {
       room: 'scottVsLina',
       username: '',
-      mode: 'easy'
+      mode: 'easy',
+      scores: []
     }
     this.handleUserNameChange = this.handleUserNameChange.bind(this);   
     this.handleMode = this.handleMode.bind(this)
+    this.updateScoreboard = this.updateScoreboard.bind(this)
   }
 
   handleUserNameChange(e) {
     this.setState({
-      username: e.target.value,
+      username: e.target.value
     });
   }
 
@@ -25,6 +28,23 @@ class App extends React.Component {
     this.setState({
       mode
     })
+  }
+  updateScoreboard() {
+  	axios.get("/wordgame", {params: {mode:this.state.mode}})
+  	.then((results) => {
+  		this.setState({
+  			scores: results.data
+  		});
+    });
+  }
+  componentDidMount(){
+    this.updateScoreboard()
+  }
+  componentDidUpdate(prevProps, prevState){
+    if(prevState.mode !== this.state.mode) {
+      console.log('updated scoreboard')
+      this.updateScoreboard()
+    }
   }
 
   render() {
@@ -39,7 +59,7 @@ class App extends React.Component {
           username={this.state.username} handleUserNameChange={this.handleUserNameChange}
           mode = {this.state.mode} handleMode = {this.handleMode}
           />
-          <Scoreboard/>
+          <Scoreboard scores = {this.state.scores}/>
         </div>
       </div>
     )

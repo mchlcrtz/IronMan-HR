@@ -102,8 +102,10 @@ var get1000Words = (callback) => {
 //FUNCTIONS TO INTERACT WITH DATABASE:
 
 // retrieve top 10 users and their high scores
-const retrieveUsers = function(callback) {
-  let queryStr = `SELECT * FROM users ORDER BY high_score DESC LIMIT 5`;
+const retrieveUsers = function(mode,callback) {
+  // let queryStr = `SELECT * FROM users WHERE mode = ${mode} ORDER BY high_score DESC LIMIT 5`;
+  let queryStr = `SELECT * FROM users WHERE mode = ${mode} ORDER BY high_score DESC`;
+
   // let queryStr = `SELECT * FROM users ORDER BY high_score DESC`;
 
   connection.query(queryStr, (err, data) => {
@@ -149,7 +151,7 @@ const addUserOrUpdateScore = function(userWithScore, callback) {
             console.error('error updating high score', err);
           } else if (result.changedRows === 0){
             // let queryStr4 = `INSERT INTO users (username, high_score, mode) VALUES ('${userWithScore.username}', ${userWithScore.high_score}, '${userWithScore.mode}')`;
-            let queryStr4 = `SELECT * FROM users where username = '${userWithScore.username}' AND high_score > ${userWithScore.high_score} AND mode != '${userWithScore.mode}'`;
+            let queryStr4 = `SELECT * FROM users WHERE username = '${userWithScore.username}' AND high_score > ${userWithScore.high_score} AND mode != '${userWithScore.mode}'`;
             connection.query(queryStr4, (err,result) => {
               if (err) {
                 console.error('Error retrieving user from database with score and mode', err);
