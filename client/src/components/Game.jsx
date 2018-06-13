@@ -18,6 +18,7 @@ class Game extends React.Component {
       round: 'all',
       instructions: ["Humpty Dumpty sat on a wall,", "Humpty Dumpty had a great fall.", "All the king's horses and all the king's men", "Couldn't put Humpty together again.", "HURRY - KEEP TYPING TO PREVENT HIS DEMISE!"],
       prompt: ['Single Player', 'Multi Player'],
+      mode: '',
       opponentTime: 0
     }
     
@@ -86,9 +87,19 @@ class Game extends React.Component {
   choosePlayersMode(e) {
     e.preventDefault();
     if(e.target.innerHTML === "Multi Player") {
-      this.getReady();
-    } else {
-      this.startGame();
+      this.setState({mode: 'multi'}, () => {
+        this.getReady();
+      })
+    } else if (e.target.innerHTML === "Single Player") {
+      this.setState({mode: 'single'}, () => {
+        this.startGame();
+      })
+    } else if (e.target.innerHTML === "REPLAY") {
+      if(this.state.mode === 'multi') {
+        this.getReady();
+      } else {
+        this.startGame();
+      }
     }
   }
 
@@ -118,6 +129,13 @@ class Game extends React.Component {
       display: "inline-block",
       backgroundColor: "none",
     };
+
+    //changing display based on player mode
+    if(this.state.mode === 'single') {
+      document.getElementById('their-game').style.display = "none";
+    } else if (this.state.mode === 'multi') {
+      document.getElementById('their-game').style.display = "flex";
+    }
 
     // long function to define what happens at every interval
     var go = () => {
@@ -266,10 +284,16 @@ class Game extends React.Component {
     // audio effect
     playGameOver();
     
+    if(this.state.mode === "multi") {
+      var instr = ['GAME OVER', `YOU SCORED: ${this.state.time}`, `YOUR OPPONENT SCORED: ${this.state.opponentTime}`]
+    } else {
+      var instr = ['GAME OVER', `YOU SCORED: ${this.state.time}`]
+    }
+
     this.setState({
       // maybe find a way to compare your score vs opponent's score and show YOU WIN/YOU LOSE
-      instructions: ['GAME OVER', `YOU SCORED: ${this.state.time}`, `YOUR OPPONENT SCORED: ${this.state.opponentTime}`],
-      prompt: 'REPLAY',
+      instructions: instr,
+      prompt: 'REPLAY'
     });
   }
 
