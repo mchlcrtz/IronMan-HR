@@ -34,8 +34,12 @@ class App extends React.Component {
           <h1>SAVE GUDETAMA!</h1>
         </nav>  
         <div className="game-container">
-          <Game room={this.state.room} username={this.state.username} handleUserNameChange={this.handleUserNameChange}/>
-          <Scoreboard mode = {this.state.mode} handleMode = {this.state.mode}/>
+          <Game 
+          room={this.state.room} 
+          username={this.state.username} handleUserNameChange={this.handleUserNameChange}
+          mode = {this.state.mode} handleMode = {this.handleMode}
+          />
+          <Scoreboard/>
         </div>
       </div>
     )

@@ -88,7 +88,7 @@ class Game extends React.Component {
   handleMode(mode){
     console.log(mode)
     this.setState({mode}, 
-      () => this.props.handleMode(this.state.mode))
+      () => this.props.handleMode(mode))
   }
   // hides starter form and user input, waits for another player to start game
   getReady(e) {
