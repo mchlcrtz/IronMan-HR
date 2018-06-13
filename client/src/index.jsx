@@ -9,14 +9,22 @@ class App extends React.Component {
     this.state = {
       room: 'scottVsLina',
       username: '',
+      mode: 'easy'
     }
     this.handleUserNameChange = this.handleUserNameChange.bind(this);   
+    this.handleMode = this.handleMode.bind(this)
   }
 
   handleUserNameChange(e) {
     this.setState({
       username: e.target.value,
     });
+  }
+
+  handleMode(mode) {
+    this.setState({
+      mode
+    })
   }
 
   render() {
@@ -27,7 +35,7 @@ class App extends React.Component {
         </nav>  
         <div className="game-container">
           <Game room={this.state.room} username={this.state.username} handleUserNameChange={this.handleUserNameChange}/>
-          <Scoreboard />
+          <Scoreboard mode = {this.state.mode} handleMode = {this.state.mode}/>
         </div>
       </div>
     )

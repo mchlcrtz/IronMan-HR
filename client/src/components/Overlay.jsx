@@ -6,7 +6,7 @@ class Overlay extends React.Component {
         this.state = {
           instructions:["Humpty Dumpty sat on a wall,", "Humpty Dumpty had a great fall.", "All the king's horses and all the king's men", "Couldn't put Humpty together again.", "HURRY - KEEP TYPING TO PREVENT HIS DEMISE!"],
           prompt:'START GAME',
-          mode: 'Easy'
+          mode: 'easy'
         }
         this.handleMode = this.handleMode.bind(this)
     }
