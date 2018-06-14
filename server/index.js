@@ -49,32 +49,36 @@ var rooms = {};
 //   }
 //   return playerCount;
 // }
-
 // all socket logic:
 io.on('connection', (socket) => { 
-  console.log('a user connected');
+  console.log('a user connected ');
+  console.log('connected: ', socket.id);
 
   socket.on('disconnect', () => {
     console.log('user disconnected');
+    console.log('disconnected: ', socket.id);
   });
   
   // sends back the user a room for random player matching (supporting 100 rooms)
   socket.on('entering room', (username, cb) => {
     // if client is second player in the room, the game starts
     for(var i = 0; i < 100; i++) {
-      if (rooms.hasOwnProperty(i) && rooms[i].length === 1) {
-        rooms[i].push(username);
+      if (rooms.hasOwnProperty(i) && Object.keys(rooms[i]).length === 1) {
+        rooms[i][socket.id] = username;
         cb(i.toString());
         socket.join(i.toString());
         io.in(i.toString()).emit('startGame');
-        console.log(`game starting in room ${i}. Players: ${rooms[i]}`);
+        console.log(`game starting in room ${i}. Players: ${Object.values(rooms[i])}`);
         console.log('rooms: ', rooms);
         return;
       }
     }
+    // if no one is waiting in a room, the user will be the first one waiting in a new room
     for(var i = 0; i < 100; i++) {
       if (!rooms.hasOwnProperty(i)) {
-        rooms[i] = [username];
+        rooms[i] = {
+          [socket.id]: username
+        };
         cb(i.toString());
         socket.join(i.toString());
         break;
@@ -82,6 +86,7 @@ io.on('connection', (socket) => {
     }
   });
 
+  // functionality to remove user from in memory room object
   socket.on('leaving room', (data) => {
     console.log("leaving room");
     socket.leave(data.room);

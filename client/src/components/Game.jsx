@@ -33,9 +33,6 @@ class Game extends React.Component {
     this.stopGame = this.stopGame.bind(this);
     this.choosePlayersMode = this.choosePlayersMode.bind(this);
 
-    var c = io.connect(process.env.PORT, {query: this.state.time})
-    console.log('c', c)
-
     socket.on('receive words from opponent', (words) => {
       this.updateOpponentWordList(words);
     });
@@ -51,8 +48,17 @@ class Game extends React.Component {
     });
   }
 
+  onUnload(event) { // the method that will be used for both add and remove event
+    console.log("hello");
+    socket.emit('leaving room', {
+      room: this.state.room,
+      username: this.props.username
+    });
+  }
+
   // get words from dictionary and join socket
   componentDidMount() {
+    window.addEventListener("beforeunload", this.onUnload);
     axios.get('/dictionary')
     .then(results => {
       this.setState({
@@ -74,11 +80,13 @@ class Game extends React.Component {
   }
 
   // leave socket
-  componentWillUnmount() {  
-    socket.emit('leaving room', {
-      room: this.state.room,
-      username: this.props.username,
-    });
+  componentWillUnmount() { 
+    window.removeEventListener("beforeunload", this.onUnload);
+    // console.log('unmounting');
+    // socket.emit('leaving room', {
+    //   room: this.state.room,
+    //   username: this.props.username,
+    // });
   }
 
   choosePlayersMode(e) {
