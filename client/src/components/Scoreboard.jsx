@@ -11,11 +11,13 @@ class Scoreboard extends React.Component {
     } 
   }
   componentDidUpdate(prevProps, prevState){
-    if(this.props.userScores.length) {
+    if(this.state.userScore.length) {
+      return 
+    } else if(this.props.userScores.length > 0) {
       this.setState({
         userScore: this.props.userScores
       })
-    }
+    } 
   }
   render() {
   	return (
@@ -33,10 +35,19 @@ class Scoreboard extends React.Component {
         )}
         {this.state.userScore.length ? 
         (
-        <h1>It works!</h1>
+        <div>
+        <h2 className = "sbHeader">{this.props.username}</h2>
+        {this.state.userScore.map((player, index) => (
+          <div className = "container" key={index}>  
+            <div className = "item">{player.mode}</div>
+            <div className = "item">{player.high_score}</div>
+          </div>
+        ))}
+
+        </div>
         )
         :
-        <h1>shiiiit</h1>
+        null
         }
       </div>
   	) 

@@ -73,7 +73,7 @@ class App extends React.Component {
           mode = {this.state.mode} handleMode = {this.handleMode}
           updateScoreboard = {this.updateScoreboard}
           />
-          <Scoreboard mode = {this.state.mode} scores = {this.state.scores} userScores = {this.state.userScores}/>
+          <Scoreboard mode = {this.state.mode} scores = {this.state.scores} userScores = {this.state.userScores} username = {this.state.username}/>
         </div>
       </div>
     )
