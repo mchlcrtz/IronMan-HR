@@ -9,6 +9,7 @@ class Game extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      room: '',
       userInput: '',
       dictionary: {},
       words: [],
@@ -17,7 +18,7 @@ class Game extends React.Component {
       timeInterval: 1000,
       round: 'all',
       instructions: ["Humpty Dumpty sat on a wall,", "Humpty Dumpty had a great fall.", "All the king's horses and all the king's men", "Couldn't put Humpty together again.", "HURRY - KEEP TYPING TO PREVENT HIS DEMISE!"],
-      prompt: ['Single Player', 'Multi Player'],
+      prompt: ['SINGLE PLAYER', 'MULTI PLAYER'],
       mode: '',
       opponentTime: 0
     }
@@ -60,17 +61,13 @@ class Game extends React.Component {
     }).catch(err => {
       console.error(err);
     });
-    socket.emit('entering room', {
-      room: this.props.room, 
-      username: this.props.username
-    });
   }
 
   // sends your words to opponent
   componentDidUpdate(prevProps, prevState) {
     if (this.state.words.length !== prevState.words.length) {
       socket.emit('send words to opponent', {
-        room: this.props.room,
+        room: this.state.room,
         newWords: this.state.words,
       }); 
     }
@@ -79,18 +76,18 @@ class Game extends React.Component {
   // leave socket
   componentWillUnmount() {  
     socket.emit('leaving room', {
-      room: this.props.room,
+      room: this.state.room,
       username: this.props.username,
     });
   }
 
   choosePlayersMode(e) {
     e.preventDefault();
-    if(e.target.innerHTML === "Multi Player") {
+    if(e.target.innerHTML === "MULTI PLAYER") {
       this.setState({mode: 'multi'}, () => {
         this.getReady();
       })
-    } else if (e.target.innerHTML === "Single Player") {
+    } else if (e.target.innerHTML === "SINGLE PLAYER") {
       this.setState({mode: 'single'}, () => {
         this.startGame();
       })
@@ -110,9 +107,16 @@ class Game extends React.Component {
     this.setState({
       prompt: 'WAITING...',
     });
-    socket.emit('ready', {
-      room: this.props.room, 
-      username: this.props.username
+    
+    // requesting a room for random multiplayer matches and entering that room.
+    socket.emit('entering room', this.props.username, (data) => {
+      this.setState({
+        room: data
+      })
+    //   socket.emit('ready', {
+    //     room: this.state.room, 
+    //     username: this.props.username
+    //   });
     });
   }
 
@@ -130,7 +134,7 @@ class Game extends React.Component {
       backgroundColor: "none",
     };
 
-    //changing display based on player mode
+    //changing display based on one or two players
     if(this.state.mode === 'single') {
       document.getElementById('their-game').style.display = "none";
     } else if (this.state.mode === 'multi') {
@@ -153,7 +157,7 @@ class Game extends React.Component {
         clearTimeout(step);
         //console.log('opponent time',this.state.time)
         socket.emit('i lost', {
-          room: this.props.room, 
+          room: this.state.room, 
           username: this.props.username, 
           score: this.state.time
         });

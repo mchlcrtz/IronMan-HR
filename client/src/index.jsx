@@ -7,8 +7,7 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      room: 'scottVsLina',
-      username: '',
+      username: ''
     }
     this.handleUserNameChange = this.handleUserNameChange.bind(this);   
   }
@@ -26,7 +25,7 @@ class App extends React.Component {
           <h1>SAVE GUDETAMA!</h1>
         </nav>  
         <div className="game-container">
-          <Game room={this.state.room} username={this.state.username} handleUserNameChange={this.handleUserNameChange}/>
+          <Game username={this.state.username} handleUserNameChange={this.handleUserNameChange}/>
           <Scoreboard />
         </div>
       </div>

@@ -28,6 +28,8 @@ app.get('/dictionary', (req, res) => {
   });
 });
 
+
+
 var port = process.env.PORT || 5000;
 
 var server = app.listen(port, function() {
@@ -40,13 +42,13 @@ var io = require('socket.io')(server);
 var rooms = {};
 
 // count the players in each room
-var getPlayerCount = (roomName) => {
-  var playerCount = 0;
-  for (var player in rooms[roomName]) {
-    playerCount += rooms[roomName][player];
-  }
-  return playerCount;
-}
+// var getPlayerCount = (roomName) => {
+//   var playerCount = 0;
+//   for (var player in rooms[roomName]) {
+//     playerCount += rooms[roomName][player];
+//   }
+//   return playerCount;
+// }
 
 // all socket logic:
 io.on('connection', (socket) => { 
@@ -55,35 +57,56 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('user disconnected');
   });
-
-  socket.on('entering room', (data) => {
-    socket.join(data.room);
+  
+  // sends back the user a room for random player matching (supporting 100 rooms)
+  socket.on('entering room', (username, cb) => {
+    // if client is second player in the room, the game starts
+    for(var i = 0; i < 100; i++) {
+      if (rooms.hasOwnProperty(i) && rooms[i].length === 1) {
+        rooms[i].push(username);
+        cb(i.toString());
+        socket.join(i.toString());
+        io.in(i.toString()).emit('startGame');
+        console.log(`game starting in room ${i}. Players: ${rooms[i]}`);
+        console.log('rooms: ', rooms);
+        return;
+      }
+    }
+    for(var i = 0; i < 100; i++) {
+      if (!rooms.hasOwnProperty(i)) {
+        rooms[i] = [username];
+        cb(i.toString());
+        socket.join(i.toString());
+        break;
+      }
+    }
   });
 
   socket.on('leaving room', (data) => {
+    console.log("leaving room");
     socket.leave(data.room);
-    rooms[data.room][data.username] = 0;
-    if (getPlayerCount(data.room) === 0) {
+    var i = rooms[data.room].indexOf(data.username);
+    rooms[data.room].splice(i, 1);
+    if (rooms[data.room].length === 0) {
       delete rooms[data.room];
     }
     console.log('leaving room, rooms is', rooms);
   });
 
-  socket.on('ready', (data) => {
-    if (!rooms[data.room]) {
-      rooms[data.room] = {};
-    }; 
-    rooms[data.room][data.username] = 1; 
-    console.log('ready, rooms is', rooms);
-    if (getPlayerCount(data.room) === 2) { //start the game with 2 players in the room
-      io.in(data.room).emit('startGame');
-    }
-  });
+  // if client is second user in room, game starts
+  // socket.on('ready', (data) => {
+  //   // if (!rooms[data.room]) {
+  //   //   rooms[data.room] = {};
+  //   // }; 
+  //   rooms[data.room][data.username] = 1; 
+  //   console.log('ready, rooms is', rooms);
+  //   if (getPlayerCount(data.room) === 2) { //start the game with 2 players in the room
+  //     io.in(data.room).emit('startGame');
+  //   }
+  // });
 
   socket.on('i lost', (data) => {
     socket.broadcast.to(data.room).emit('they lost', data.score);
-    rooms[data.room][data.username] = 0;
-    console.log('i lost, rooms is', rooms);
   });
 
   socket.on('send words to opponent', function(data) {
