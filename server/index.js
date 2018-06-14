@@ -1,6 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
-var {retrieveUsers, addUserOrUpdateScore, get1000Words} = require('../database/index.js');
+var {retrieveUsers, retrieveUserScores, addUserOrUpdateScore, get1000Words} = require('../database/index.js');
 
 var app = express();
 
@@ -21,6 +21,12 @@ app.post('/wordgame', (req,res) => {
     res.status(201).send(results);
   });
 });
+
+app.get('/userScores', (req, res) => {
+  retrieveUserScores(req.query, (scores) => {
+    res.send(scores)
+  })
+})
 
 // get words from dictionary, send back to client
 app.get('/dictionary', (req, res) => {

@@ -11,11 +11,13 @@ class App extends React.Component {
       room: 'scottVsLina',
       username: '',
       mode: 'easy',
-      scores: []
+      scores: [],
+      userScores: []
     }
     this.handleUserNameChange = this.handleUserNameChange.bind(this);   
     this.handleMode = this.handleMode.bind(this)
     this.updateScoreboard = this.updateScoreboard.bind(this)
+    this.updateUserScores = this.updateUserScores.bind(this)
   }
 
   handleUserNameChange(e) {
@@ -27,6 +29,14 @@ class App extends React.Component {
   handleMode(mode) {
     this.setState({
       mode
+    })
+  }
+  updateUserScores(){
+    axios.get('/userScores', {params: {username: this.state.username}})
+    .then((results) => {
+      this.setState({
+        userScores: results.data
+      })
     })
   }
   updateScoreboard() {
@@ -45,6 +55,9 @@ class App extends React.Component {
       console.log('updated scoreboard')
       this.updateScoreboard()
     }
+    if(prevState.username !== this.state.username){
+      this.updateUserScores()
+    }
   }
 
   render() {
@@ -60,7 +73,7 @@ class App extends React.Component {
           mode = {this.state.mode} handleMode = {this.handleMode}
           updateScoreboard = {this.updateScoreboard}
           />
-          <Scoreboard mode = {this.state.mode} scores = {this.state.scores}/>
+          <Scoreboard mode = {this.state.mode} scores = {this.state.scores} userScores = {this.state.userScores}/>
         </div>
       </div>
     )
