@@ -20,7 +20,9 @@ class Game extends React.Component {
       instructions: ["Humpty Dumpty sat on a wall,", "Humpty Dumpty had a great fall.", "All the king's horses and all the king's men", "Couldn't put Humpty together again.", "HURRY - KEEP TYPING TO PREVENT HIS DEMISE!"],
       prompt: ['SINGLE PLAYER', 'MULTI PLAYER'],
       mode: '',
-      opponentTime: 0
+      opponentTime: 0,
+      livePlayers: [],
+      username: ''
     }
     
     this.getReady = this.getReady.bind(this);
@@ -32,6 +34,10 @@ class Game extends React.Component {
     this.sendScore = this.sendScore.bind(this);
     this.stopGame = this.stopGame.bind(this);
     this.choosePlayersMode = this.choosePlayersMode.bind(this);
+    this.handleUserNameChange = this.handleUserNameChange.bind(this);   
+    this.enteringMultiPlayerLobby = this.enteringMultiPlayerLobby.bind(this);
+    this.challenge = this.challenge.bind(this);
+  
 
     socket.on('receive words from opponent', (words) => {
       this.updateOpponentWordList(words);
@@ -48,17 +54,8 @@ class Game extends React.Component {
     });
   }
 
-  onUnload(event) { // the method that will be used for both add and remove event
-    console.log("hello");
-    socket.emit('leaving room', {
-      room: this.state.room,
-      username: this.props.username
-    });
-  }
-
   // get words from dictionary and join socket
   componentDidMount() {
-    window.addEventListener("beforeunload", this.onUnload);
     axios.get('/dictionary')
     .then(results => {
       this.setState({
@@ -79,22 +76,33 @@ class Game extends React.Component {
     }
   }
 
-  // leave socket
-  componentWillUnmount() { 
-    window.removeEventListener("beforeunload", this.onUnload);
-    // console.log('unmounting');
-    // socket.emit('leaving room', {
-    //   room: this.state.room,
-    //   username: this.props.username,
-    // });
+  handleUserNameChange(e) {
+    this.setState({
+      username: e.target.value,
+    })
+  }
+
+  enteringMultiPlayerLobby() {
+    socket.emit('entering multi player lobby', this.state.username, (data) => {
+      console.log(typeof data);
+      let i = data.indexOf(this.state.username);
+      data.splice(i, 1);
+      this.setState({
+        livePlayers: data,
+        prompt: "PLAY RANDOM OPPONENT"
+      })
+    });
   }
 
   choosePlayersMode(e) {
     e.preventDefault();
+    console.log(e.target.innerHTML)
     if(e.target.innerHTML === "MULTI PLAYER") {
       this.setState({mode: 'multi'}, () => {
-        this.getReady();
+        this.enteringMultiPlayerLobby();
       })
+    } else if (e.target.innerHTML === "PLAY RANDOM OPPONENT") {
+      this.getReady();
     } else if (e.target.innerHTML === "SINGLE PLAYER") {
       this.setState({mode: 'single'}, () => {
         this.startGame();
@@ -108,6 +116,12 @@ class Game extends React.Component {
     }
   }
 
+  // challenge online player
+  challenge(e) {
+    console.log(e.target.innerHTML);
+  }
+
+
   // hides starter form and user input, waits for another player to start game
   getReady() {
     document.getElementById('starter-form').disabled = true;
@@ -117,7 +131,7 @@ class Game extends React.Component {
     });
     
     // requesting a room for random multiplayer matches and entering that room.
-    socket.emit('entering room', this.props.username, (data) => {
+    socket.emit('entering room', this.props.username, ((data) => {
       this.setState({
         room: data
       })
@@ -125,7 +139,7 @@ class Game extends React.Component {
     //     room: this.state.room, 
     //     username: this.props.username
     //   });
-    });
+    }));
   }
 
   startGame() {
@@ -317,7 +331,9 @@ class Game extends React.Component {
           prompt={this.state.prompt}
           choosePlayersMode={this.choosePlayersMode}
           username={this.state.username}
-          handleUserNameChange={this.props.handleUserNameChange}
+          handleUserNameChange={this.handleUserNameChange}
+          livePlayers={this.state.livePlayers}
+          challenge={this.challenge}
         />
     
         <div className="timer">

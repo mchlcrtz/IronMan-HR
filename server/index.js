@@ -28,7 +28,9 @@ app.get('/dictionary', (req, res) => {
   });
 });
 
-
+app.get('/livePlayers', (req, res) => {
+  res.send(livePlayers);
+})
 
 var port = process.env.PORT || 5000;
 
@@ -40,39 +42,59 @@ var io = require('socket.io')(server);
 
 // an object to store what users are in what rooms
 var rooms = {};
+var livePlayers = {};
 
-// count the players in each room
-// var getPlayerCount = (roomName) => {
-//   var playerCount = 0;
-//   for (var player in rooms[roomName]) {
-//     playerCount += rooms[roomName][player];
-//   }
-//   return playerCount;
-// }
-// all socket logic:
 io.on('connection', (socket) => { 
-  console.log('a user connected ');
-  console.log('connected: ', socket.id);
-
+  console.log('a user connected ', socket.id);
+  
   socket.on('disconnect', () => {
-    console.log('user disconnected');
-    console.log('disconnected: ', socket.id);
+    console.log('user disconnected ', socket.id);
+    
+    delete livePlayers[socket.id];
+
+    // removes user from room, if room has two users; deletes room if user is alone in it
+    for (var room in rooms) {
+      if (rooms[room].hasOwnProperty(socket.id)) {
+        if (Object.keys(rooms[room]).length === 1) {
+          delete rooms[room];
+        } else {
+          delete rooms[room][socket.id];
+        }
+      }
+    }
+    console.log('rooms: ', rooms);
   });
   
+  // adds client to live playes and returns list of usernames that are currently looking for a match
+  socket.on('entering multi player lobby', (username, cb) => {
+    livePlayers[socket.id] = username;
+    cb(Object.values(livePlayers));
+  })
+
   // sends back the user a room for random player matching (supporting 100 rooms)
   socket.on('entering room', (username, cb) => {
+    
+    // removes player from livePlayers as he is getting matched to random opponent
+    delete livePlayers[socket.id];
+
+    // checking whether user is already in a room
+    for (var room in rooms) {
+      if(rooms[room].hasOwnProperty(socket.id)) return;
+    }
+
     // if client is second player in the room, the game starts
     for(var i = 0; i < 100; i++) {
       if (rooms.hasOwnProperty(i) && Object.keys(rooms[i]).length === 1) {
-        rooms[i][socket.id] = username;
-        cb(i.toString());
-        socket.join(i.toString());
-        io.in(i.toString()).emit('startGame');
-        console.log(`game starting in room ${i}. Players: ${Object.values(rooms[i])}`);
-        console.log('rooms: ', rooms);
-        return;
-      }
+          rooms[i][socket.id] = username;
+          cb(i.toString());
+          socket.join(i.toString());
+          io.in(i.toString()).emit('startGame');
+          console.log(`game starting in room ${i}. Players: ${Object.values(rooms[i])}`);
+          console.log('rooms: ', rooms);
+          return;
+      } 
     }
+
     // if no one is waiting in a room, the user will be the first one waiting in a new room
     for(var i = 0; i < 100; i++) {
       if (!rooms.hasOwnProperty(i)) {
@@ -86,30 +108,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  // functionality to remove user from in memory room object
-  socket.on('leaving room', (data) => {
-    console.log("leaving room");
-    socket.leave(data.room);
-    var i = rooms[data.room].indexOf(data.username);
-    rooms[data.room].splice(i, 1);
-    if (rooms[data.room].length === 0) {
-      delete rooms[data.room];
-    }
-    console.log('leaving room, rooms is', rooms);
-  });
-
-  // if client is second user in room, game starts
-  // socket.on('ready', (data) => {
-  //   // if (!rooms[data.room]) {
-  //   //   rooms[data.room] = {};
-  //   // }; 
-  //   rooms[data.room][data.username] = 1; 
-  //   console.log('ready, rooms is', rooms);
-  //   if (getPlayerCount(data.room) === 2) { //start the game with 2 players in the room
-  //     io.in(data.room).emit('startGame');
-  //   }
-  // });
-
   socket.on('i lost', (data) => {
     socket.broadcast.to(data.room).emit('they lost', data.score);
   });
@@ -118,3 +116,4 @@ io.on('connection', (socket) => {
     socket.broadcast.to(data.room).emit('receive words from opponent', data.newWords);
   });
 });
+
