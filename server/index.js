@@ -1,6 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
-var {retrieveUsers, addUserOrUpdateScore, get1000Words} = require('../database/index.js');
+var {retrieveUsers, retrieveUserScores, addUserOrUpdateScore, get1000Words} = require('../database/index.js');
 
 var app = express();
 
@@ -9,17 +9,24 @@ app.use(bodyParser.json());
 
 // querying all users and scores from the database 
 app.get('/wordgame', (req, res) => { 
-  retrieveUsers((data) => {
+  retrieveUsers(req.query, (data) => {
     res.send(data);
   });
 });
 
 // at end of game, add to or update db with username and high score
 app.post('/wordgame', (req,res) => {
+  console.log(req.body)
   addUserOrUpdateScore(req.body, (results) => {
     res.status(201).send(results);
   });
 });
+
+app.get('/userScores', (req, res) => {
+  retrieveUserScores(req.query, (scores) => {
+    res.send(scores)
+  })
+})
 
 // get words from dictionary, send back to client
 app.get('/dictionary', (req, res) => {
@@ -101,6 +108,7 @@ io.on('connection', (socket) => {
       if(rooms[room].hasOwnProperty(socket.id)) return;
     }
 
+<<<<<<< HEAD
     // if client is second player in the room, the game starts
     for(var i = 0; i < 100; i++) {
       if (rooms.hasOwnProperty(i) && Object.keys(rooms[i]).length === 1) {
@@ -112,6 +120,14 @@ io.on('connection', (socket) => {
           console.log('rooms: ', rooms);
           return;
       } 
+=======
+  socket.on('leaving room', (data) => {
+    console.log('leaving rooms...');
+    socket.leave(data.room);
+    // rooms[data.room][data.username] = 0;
+    if (getPlayerCount(data.room) === 0) {
+      delete rooms[data.room];
+>>>>>>> modes
     }
 
     // if no one is waiting in a room, the user will be the first one waiting in a new room
@@ -128,7 +144,13 @@ io.on('connection', (socket) => {
   });
 
   socket.on('i lost', (data) => {
+    console.log('losing...');
     socket.broadcast.to(data.room).emit('they lost', data.score);
+<<<<<<< HEAD
+=======
+    // rooms[data.room][data.username] = 0;
+    console.log('i lost, rooms is', rooms);
+>>>>>>> modes
   });
 
   socket.on('send words to opponent', function(data) {

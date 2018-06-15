@@ -5,40 +5,50 @@ class Scoreboard extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      highscore: [], 
-      rank: ['1ST', '2ND', '3RD', '4TH', '5TH', '6TH', '7TH', '8TH', '9TH', '10TH'],
-      counter: 0
+      rank: ['1ST', '2ND', '3RD', '4TH', '5TH'],
+      counter: 0,
+      userScore: []
     } 
-    this.updateScoreboard = this.updateScoreboard.bind(this);
   }
- 
-  componentDidMount() {
-    this.updateScoreboard(); 
+  componentDidUpdate(prevProps, prevState){
+    if(this.state.userScore.length) {
+      return 
+    } else if(this.props.userScores.length > 0) {
+      this.setState({
+        userScore: this.props.userScores
+      })
+    } 
   }
-
-  updateScoreboard() {
-  	axios.get("/wordgame")
-  	.then((results) => {
-  		this.setState({
-  			highscore: results.data
-  		});
-    });
-  }
-
   render() {
   	return (
       <div className="scoreboard">
-        <h2 className="sbHeader">HIGH SCORES</h2>
+        <h2 className="sbHeader">{this.props.mode.toUpperCase()} HIGH SCORES</h2>
         <ul className="sbColumn left">RANK</ul>
         <ul className="sbColumn middle">NAME</ul>
         <ul className="sbColumn right">SCORE</ul>
-        {this.state.highscore.map((score, index) => 
+        {this.props.scores.map((score, index) => 
           <div key={index}>  
-            <ul className="sbColumn left">{this.state.rank[this.state.counter++]}</ul>
+            <ul className="sbColumn left">{this.state.rank[index]}</ul>
             <ul className="sbColumn middle">{score.username}</ul>
             <ul className="sbColumn right">{score.high_score}</ul>
           </div>
-        )} 
+        )}
+        {this.state.userScore.length ? 
+        (
+        <div>
+        <h2 className = "sbHeader">{this.props.username}</h2>
+        {this.state.userScore.map((player, index) => (
+          <div className = "container" key={index}>  
+            <div className = "item">{player.mode}</div>
+            <div className = "item">{player.high_score}</div>
+          </div>
+        ))}
+
+        </div>
+        )
+        :
+        null
+        }
       </div>
   	) 
   }

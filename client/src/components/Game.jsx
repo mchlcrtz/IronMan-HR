@@ -154,7 +154,7 @@ class Game extends React.Component {
     
     // requesting a room for random multiplayer matches and entering that room.
     socket.emit('entering room', this.props.username, ((data) => {
-      this.setState({
+      this.setState({ f
         room: data
       })
     //   socket.emit('ready', {
