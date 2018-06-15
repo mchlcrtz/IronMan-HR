@@ -63,10 +63,15 @@ html, body, #app, .app-container {
 
 .overlay-prompt {
   padding: 25px 0;
+  cursor: pointer;
 }
 
 .overlay-prompt:hover {
   color: yellow;
+}
+
+.playerName {
+  cursor: pointer;
 }
 
 nav {

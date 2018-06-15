@@ -52,6 +52,26 @@ class Game extends React.Component {
       })
       document.getElementById('their-game').style.backgroundColor = "red";
     });
+    socket.on('player entered/left lobby', (data) => {
+       if(data[socket.id]) delete data[socket.id];
+       this.setState({
+         livePlayers: data
+       })
+    })
+    socket.on('getting challenged', (challenger) => {
+      console.log('getting challenged by ', challenger.username);
+      var accept = confirm(
+        `${challenger.username} challenges you!
+          Do you accept the challenge?
+        `
+      );
+      if (accept === true) {
+        socket.emit('challenge accepted', {
+          challenger,
+          challenged: {username: this.state.username, id: socket.id}
+        })
+      }
+    })
   }
 
   // get words from dictionary and join socket
@@ -83,12 +103,8 @@ class Game extends React.Component {
   }
 
   enteringMultiPlayerLobby() {
-    socket.emit('entering multi player lobby', this.state.username, (data) => {
-      console.log(typeof data);
-      let i = data.indexOf(this.state.username);
-      data.splice(i, 1);
+    socket.emit('entering multi player lobby', this.state.username, () => {
       this.setState({
-        livePlayers: data,
         prompt: "PLAY RANDOM OPPONENT"
       })
     });
@@ -102,6 +118,7 @@ class Game extends React.Component {
         this.enteringMultiPlayerLobby();
       })
     } else if (e.target.innerHTML === "PLAY RANDOM OPPONENT") {
+      socket.emit('leaving multi player lobby', this.state.username);
       this.getReady();
     } else if (e.target.innerHTML === "SINGLE PLAYER") {
       this.setState({mode: 'single'}, () => {
@@ -119,6 +136,11 @@ class Game extends React.Component {
   // challenge online player
   challenge(e) {
     console.log(e.target.innerHTML);
+    console.log(e.target.id);
+    socket.emit('challenging user', {
+      challenger: {username: e.target.innerHTML, id: e.target.id},
+      challenged: e.target.id
+    });
   }
 
 

@@ -52,6 +52,8 @@ io.on('connection', (socket) => {
     
     delete livePlayers[socket.id];
 
+    io.emit('player entered/left lobby', livePlayers);
+
     // removes user from room, if room has two users; deletes room if user is alone in it
     for (var room in rooms) {
       if (rooms[room].hasOwnProperty(socket.id)) {
@@ -68,7 +70,24 @@ io.on('connection', (socket) => {
   // adds client to live playes and returns list of usernames that are currently looking for a match
   socket.on('entering multi player lobby', (username, cb) => {
     livePlayers[socket.id] = username;
-    cb(Object.values(livePlayers));
+    io.emit('player entered/left lobby', livePlayers);
+    cb();
+  })
+
+  socket.on('leaving multi player lobby', username => {
+    delete livePlayers[socket.id];
+    io.emit('player entered/left lobby', livePlayers);
+  })
+
+  socket.on('challenging user', (data) => {
+    io.to(data.challenged).emit('getting challenged', data.challenger);
+  })
+
+  socket.on('challenge accepted', (players) => {
+    delete livePlayers[players.challenged.id];
+    delete livePlayers[players.challenger.id];
+    io.emit('player entered/left lobby', livePlayers);
+    
   })
 
   // sends back the user a room for random player matching (supporting 100 rooms)

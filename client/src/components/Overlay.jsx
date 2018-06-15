@@ -19,9 +19,9 @@ class Overlay extends React.Component {
 
       // checks if we are in selecting opponent phase
       if(this.props.prompt === 'PLAY RANDOM OPPONENT') {
-        var players = this.props.livePlayers.map((player, i) => {
-          return <div key={i} onClick={(e)=> this.props.challenge(e)}>{player}</div>
-        });
+        var players = Object.keys(this.props.livePlayers).map((id) => {
+          return <div id={id} key={id} className="playerName" onClick={(e)=> this.props.challenge(e)}>{this.props.livePlayers[id]}</div>
+        })
         var instr = <div>Players Online</div>;
       } else {
         var players = instr = null;
