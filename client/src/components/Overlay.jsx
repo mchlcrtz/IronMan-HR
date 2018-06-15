@@ -5,7 +5,6 @@ class Overlay extends React.Component {
         super(props)
         this.state = {
           instructions:["Humpty Dumpty sat on a wall,", "Humpty Dumpty had a great fall.", "All the king's horses and all the king's men", "Couldn't put Humpty together again.", "HURRY - KEEP TYPING TO PREVENT HIS DEMISE!"],
-          prompt:'START GAME',
           mode: 'easy'
         }
         this.handleMode = this.handleMode.bind(this)
@@ -54,16 +53,16 @@ class Overlay extends React.Component {
               <input id="user-input" placeholder="Who are you?" value={this.props.username} onChange={this.props.handleUserNameChange} autoFocus/>
             </form>
           </div>
-          {instr}
-          {players}
-          {prompt}
-          {/*Only show when single Player*/}
+          {this.props.prompt === 'START GAME' &&
           <select value = {this.state.mode} onChange = {this.handleMode}>
             <option value = 'easy'>Easy</option>
             <option value = 'medium'>Medium</option>
             <option value = 'hard'>Hard</option>
           </select>
-          <div id="overlay-start" onClick={this.props.startGame} className="blinking">{this.state.prompt}</div>
+          }
+          {instr}
+          {players}
+          {prompt}
         </div>
       )
     }

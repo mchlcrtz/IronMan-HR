@@ -128,9 +128,9 @@ class Game extends React.Component {
       socket.emit('leaving multi player lobby', this.props.username);
       this.getReady();
     } else if (e.target.innerHTML === "SINGLE PLAYER") {
-      this.setState({mode: 'single'}, () => {
-        this.startGame();
-      })
+      this.setState({mode: 'single', prompt: "START GAME"});
+    } else if (e.target.innerHTML === "START GAME") {
+      this.startGame();
     } else if (e.target.innerHTML === "REPLAY") {
       if(this.state.mode === 'multi') {
         this.getReady();
