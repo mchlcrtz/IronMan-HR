@@ -1,7 +1,12 @@
 import React from 'react';
 import Brick from './Brick.jsx';
 import Overlay from './Overlay.jsx';
+import Timer from './Timer.jsx'
 import axios from 'axios';
+import PowerBank from './PowerBank.jsx';
+
+import { EEXIST } from 'constants';
+
 import io from 'socket.io-client';
 const socket = io();
 
@@ -16,13 +21,16 @@ class Game extends React.Component {
       theirWords: [],
       time: 0,
       timeInterval: 1000,
+      modeInterval: 700,
       round: 'all',
       instructions: ["Humpty Dumpty sat on a wall,", "Humpty Dumpty had a great fall.", "All the king's horses and all the king's men", "Couldn't put Humpty together again.", "HURRY - KEEP TYPING TO PREVENT HIS DEMISE!"],
       prompt: ['SINGLE PLAYER', 'MULTI PLAYER'],
-      mode: '',
+      mode: 'multi',
+      difficulty: 'easy',
+      powerups: {},
+      bankedPowers: [],
       opponentTime: 0,
-      livePlayers: [],
-      username: ''
+      livePlayers: []
     }
     
     this.getReady = this.getReady.bind(this);
@@ -33,8 +41,8 @@ class Game extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.sendScore = this.sendScore.bind(this);
     this.stopGame = this.stopGame.bind(this);
+    this.handleMode = this.handleMode.bind(this);
     this.choosePlayersMode = this.choosePlayersMode.bind(this);
-    this.handleUserNameChange = this.handleUserNameChange.bind(this);   
     this.enteringMultiPlayerLobby = this.enteringMultiPlayerLobby.bind(this);
     this.challenge = this.challenge.bind(this);
   
@@ -68,7 +76,7 @@ class Game extends React.Component {
       if (accept === true) {
         socket.emit('challenge accepted', {
           challenger,
-          challenged: {username: this.state.username, id: socket.id}
+          challenged: {username: this.props.username, id: socket.id}
         })
       }
     })
@@ -96,14 +104,13 @@ class Game extends React.Component {
     }
   }
 
-  handleUserNameChange(e) {
-    this.setState({
-      username: e.target.value,
-    })
+  handleMode(difficulty){
+    this.setState({difficulty}, 
+      () => this.props.handleMode(difficulty))
   }
 
   enteringMultiPlayerLobby() {
-    socket.emit('entering multi player lobby', this.state.username, () => {
+    socket.emit('entering multi player lobby', this.props.username, () => {
       this.setState({
         prompt: "PLAY RANDOM OPPONENT"
       })
@@ -118,7 +125,7 @@ class Game extends React.Component {
         this.enteringMultiPlayerLobby();
       })
     } else if (e.target.innerHTML === "PLAY RANDOM OPPONENT") {
-      socket.emit('leaving multi player lobby', this.state.username);
+      socket.emit('leaving multi player lobby', this.props.username);
       this.getReady();
     } else if (e.target.innerHTML === "SINGLE PLAYER") {
       this.setState({mode: 'single'}, () => {
@@ -154,7 +161,7 @@ class Game extends React.Component {
     
     // requesting a room for random multiplayer matches and entering that room.
     socket.emit('entering room', this.props.username, ((data) => {
-      this.setState({ f
+      this.setState({
         room: data
       })
     //   socket.emit('ready', {
@@ -215,22 +222,31 @@ class Game extends React.Component {
       // updates the time and speeds up the game accordingly 
       // (as timeInterval decreases, words appear at a faster rate)
       var newTime = this.state.time + 1;
+      if(this.state.difficulty === 'easy') {
+        this.setState({round: 'roundOne'})
+      }
+      if(this.state.difficulty === 'medium') {
+        this.setState({round: 'roundTwo'})
+      }
+      if(this.state.difficulty === 'hard') {
+        this.setState({round: 'roundThree'})
+      }
       if (newTime > 20) {
         this.setState({
           time: newTime,
-          timeInterval: 600,
-          //round: 'roundThree', // uncomment these to only serve short words at beginning, long words at end
+          timeInterval: this.state.modeInterval,
+          // round: 'roundThree' // uncomment these to only serve short words at beginning, long words at end
         });
       } else if (newTime > 8) { 
         this.setState({
           time: newTime,
-          timeInterval: 800,
-          //round: 'roundTwo',
+          timeInterval: this.state.modeInterval,
+          // round: 'roundOne'
         });
       } else {
         this.setState({
           time: newTime,
-          //round: 'roundOne',
+          // round: 'roundOne',
         });
       }
     }
@@ -300,12 +316,14 @@ class Game extends React.Component {
   }
 
   // upon game over, sends username and score to database to be added/updated
-  sendScore(username, score) {
+  sendScore(username, score, difficulty) {
     axios.post('/wordgame', {
       "username": username,
-      "high_score": score
+      "high_score": score,
+      "mode": difficulty
     })
     .then(result => {
+      this.props.updateScoreboard()
       console.log(result);
     }).catch(err => {
       console.error(err);
@@ -352,15 +370,14 @@ class Game extends React.Component {
           instructions={this.state.instructions}
           prompt={this.state.prompt}
           choosePlayersMode={this.choosePlayersMode}
-          username={this.state.username}
-          handleUserNameChange={this.handleUserNameChange}
+          username={this.props.username}
+          handleUserNameChange={this.props.handleUserNameChange}
           livePlayers={this.state.livePlayers}
           challenge={this.challenge}
+          handleMode = {this.handleMode}
         />
     
-        <div className="timer">
-          <h1>{this.state.time}</h1>
-        </div>
+      <Timer time = {this.state.time}/>
 
         <div className="board">
           {/* your game: */}
