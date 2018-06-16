@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server/index.js",
     "react-dev": "webpack -d --watch --config webpack.config.js",
-    "server-dev": "nodemon server/index.js"
+    "server-dev": "nodemon server/index.js",
+    "heroku-postbuild": "webpack -p --config ./webpack.config.js --progress"
   },
   "repository": {
     "type": "git",

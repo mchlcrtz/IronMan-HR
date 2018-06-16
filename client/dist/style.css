@@ -207,6 +207,7 @@ input {
   width: 45%;
   height: 45%;
   background: url("./assets/gudetama-cracked.gif") no-repeat center/cover;
+  background-position: center; 
 }
 
 .sbColumn {
