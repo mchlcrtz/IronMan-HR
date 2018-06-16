@@ -25,12 +25,9 @@ The functionality of the game itself existed already. MultiPlayer was possible, 
 ## Table of Contents
 
 1. [Usage](#Usage)
-1. [Requirements](#requirements)
 1. [Development](#development)
     1. [Installing Dependencies](#installing-dependencies)
-    1. [Tasks](#tasks)
-1. [Team](#team)
-1. [Contributing](#contributing)
+1. [Suggestions for further features](#Suggestions-for-where-to-go-from-here---take-or-leave!)
 
 ## Usage
 
