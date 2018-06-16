@@ -21,6 +21,7 @@ app.post('/wordgame', (req,res) => {
   });
 });
 
+// retrieve user scores from database
 app.get('/userScores', (req, res) => {
   retrieveUserScores(req.query, (scores) => {
     res.send(scores)
@@ -34,20 +35,19 @@ app.get('/dictionary', (req, res) => {
   });
 });
 
-app.get('/livePlayers', (req, res) => {
-  res.send(livePlayers);
-})
-
 var port = process.env.PORT || 5000;
 
 var server = app.listen(port, function() {
   console.log(`listening on port ${port}!`);
 });
 
+/////// SOCKET FUNCTIONALITY BELOW ///////
 var io = require('socket.io')(server);
 
-// an object to store what users are in what rooms
+// rooms object that is in-sync with socket.io rooms
 var rooms = {};
+
+// players in multi player lobby, that can be challenged
 var livePlayers = {};
 
 io.on('connection', (socket) => { 
@@ -57,7 +57,8 @@ io.on('connection', (socket) => {
     console.log('user disconnected ', socket.id);
     delete livePlayers[socket.id];
     io.emit('player entered/left lobby', livePlayers);
-    // removes user from room, if room has two users; deletes room if user is alone in it
+
+    // Removes disconnected user from room, if room has two users. Deletes room if user is alone in it
     for (var room in rooms) {
       if (rooms[room].hasOwnProperty(socket.id)) {
         if (Object.keys(rooms[room]).length === 1) {
@@ -76,11 +77,13 @@ io.on('connection', (socket) => {
     cb();
   })
 
+  // removes user from multiplayer lobby and communicates the change to all clients
   socket.on('leaving multi player lobby', username => {
     delete livePlayers[socket.id];
     io.emit('player entered/left lobby', livePlayers);
   })
 
+  // receives challenge request from challenger, creates a room for the match, should it happen and forwards the request to challenged player
   socket.on('challenging user', (data) => {
     for(var i = 0; i < 100; i++) {
       if (!rooms.hasOwnProperty(i)) {
@@ -95,7 +98,9 @@ io.on('connection', (socket) => {
     io.to(data.challenged.id).emit('getting challenged', data);
   })
 
+  // receives response to challenge request
   socket.on('challenge response', (data) => {
+    // if challenge accepted, removes players from lobby, adds challenged player to room and starts game
     if (data.response === true) {
       delete livePlayers[data.challenged.id];
       delete livePlayers[data.challenger.id];
@@ -117,8 +122,8 @@ io.on('connection', (socket) => {
     }
   });
 
-  // sends back the user a room for random player matching (supporting 100 rooms)
-socket.on('entering room', (username /*, cb*/) => {
+  // adds user to a room for multiplayer game random matching
+socket.on('entering room', (username) => {
     
     // removes player from livePlayers as he is getting matched to random opponent
     delete livePlayers[socket.id];
@@ -155,10 +160,12 @@ socket.on('entering room', (username /*, cb*/) => {
     }
   });
 
+  // sends user's score to opponent
   socket.on('i lost', (data) => {
     socket.broadcast.to(data.room).emit('they lost', data.score);
   });
 
+  // send current list of words to opponent (during game)
   socket.on('send words to opponent', function(data) {
     socket.broadcast.to(data.room).emit('receive words from opponent', data.newWords);
   });

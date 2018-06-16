@@ -50,7 +50,6 @@ class Game extends React.Component {
       this.startGame();
     });
     socket.on('they lost', (score) => {
-      // this is bad, eventually put a red x over their bricks or something
       this.setState({
         opponentTime: score,
         instructions: ['GAME OVER', `YOU SCORED: ${this.state.time}`, `YOUR OPPONENT SCORED: ${score}`]
@@ -103,6 +102,7 @@ class Game extends React.Component {
     }
   }
 
+  // changes difficulty selected in single player
   handleMode(difficulty){
     this.setState({difficulty}, 
       () => {
@@ -120,9 +120,9 @@ class Game extends React.Component {
     });
   }
 
+  // handles various clicks on prompt
   choosePlayersMode(e) {
     e.preventDefault();
-    console.log(e.target.innerHTML)
     if(e.target.innerHTML === "MULTI PLAYER") {
       this.setState({mode: 'multi', difficulty: 'medium'}, () => {
         this.props.handleMode('medium');
@@ -163,18 +163,11 @@ class Game extends React.Component {
       prompt: 'WAITING...',
     });
     
-    // requesting a room for random multiplayer matches and entering that room.
-    socket.emit('entering room', this.props.username) /*, ((data) => {
-      this.setState({
-        room: data
-      })*/
-    //   socket.emit('ready', {
-    //     room: this.state.room, 
-    //     username: this.props.username
-    //   });
-    //}));
+    // entering a room for multiplayer
+    socket.emit('entering room', this.props.username) 
   }
 
+  // starts the game
   startGame() {
     document.getElementById('typing-input').disabled = false;
     document.getElementById('typing-input').focus();
@@ -210,7 +203,6 @@ class Game extends React.Component {
       // (as bricks build up, background turns a darker red to signify danger)
       if (this.state.words.length >= 20) {
         clearTimeout(step);
-        //console.log('opponent time',this.state.time)
         socket.emit('i lost', {
           room: this.state.room, 
           username: this.props.username, 
@@ -329,7 +321,6 @@ class Game extends React.Component {
     })
     .then(result => {
       this.props.updateScoreboard()
-      console.log(result);
     }).catch(err => {
       console.error(err);
     })
@@ -358,9 +349,9 @@ class Game extends React.Component {
     if(this.state.mode === "multi") {
       var instr = ['GAME OVER', `YOU SCORED: ${this.state.time}`, `YOUR OPPONENT SCORED: ${this.state.opponentTime}`]
     } else {
-      var instr = ['GAME OVER', `YOU SCORED: ${this.state.time}`]
+      var instr = ['GAME OVER', `YOU SCORED: ${this.state.time}`];
     }
-    console.log({instr});
+    
     this.setState({
       // maybe find a way to compare your score vs opponent's score and show YOU WIN/YOU LOSE
       instructions: instr,
