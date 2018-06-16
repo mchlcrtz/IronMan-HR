@@ -74,6 +74,16 @@ html, body, #app, .app-container {
   cursor: pointer;
 }
 
+.difficulty {
+  cursor: pointer;
+  font-size: 32px;
+  margin: 40px 0;
+} 
+
+.difficulty:hover {
+  color: yellow;
+}
+
 nav {
   height: 10%;
   padding: 10px;

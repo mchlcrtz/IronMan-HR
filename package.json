@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npm run react-dev | npm run server-dev",
+    "start": "node server/index.js",
     "react-dev": "webpack -d --watch --config webpack.config.js",
     "server-dev": "nodemon server/index.js"
   },

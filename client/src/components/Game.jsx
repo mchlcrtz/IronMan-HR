@@ -5,8 +5,6 @@ import Timer from './Timer.jsx'
 import axios from 'axios';
 import PowerBank from './PowerBank.jsx';
 
-import { EEXIST } from 'constants';
-
 import io from 'socket.io-client';
 const socket = io();
 
@@ -70,16 +68,25 @@ class Game extends React.Component {
       console.log('getting challenged by ', challenger.username);
       var accept = confirm(
         `${challenger.username} challenges you!
-          Do you accept the challenge?
-        `
+          Do you accept the challenge?`
       );
       if (accept === true) {
+        console.log('accepted challenge');
         socket.emit('challenge accepted', {
-          challenger,
+          challenger: {username: challenger.username, id: challenger.id, socketObj: challenger.socketObj},
+          challenged: {username: this.props.username, id: socket.id}
+        })
+      } else {
+        socket.emit('challenge denied', {
+          challenger: {username: challenger.username, id: challenger.id, socketObj: challenger.socketObj},
           challenged: {username: this.props.username, id: socket.id}
         })
       }
     })
+    socket.on('challenged player accepted', (cb) => {
+      cb(socket);
+    });
+
   }
 
   // get words from dictionary and join socket
@@ -106,7 +113,11 @@ class Game extends React.Component {
 
   handleMode(difficulty){
     this.setState({difficulty}, 
-      () => this.props.handleMode(difficulty))
+      () => {
+        this.props.handleMode(difficulty)
+        this.startGame();
+      }
+    )
   }
 
   enteringMultiPlayerLobby() {
@@ -121,7 +132,8 @@ class Game extends React.Component {
     e.preventDefault();
     console.log(e.target.innerHTML)
     if(e.target.innerHTML === "MULTI PLAYER") {
-      this.setState({mode: 'multi'}, () => {
+      this.setState({mode: 'multi', difficulty: 'medium'}, () => {
+        this.props.handleMode('medium');
         this.enteringMultiPlayerLobby();
       })
     } else if (e.target.innerHTML === "PLAY RANDOM OPPONENT") {
@@ -145,13 +157,13 @@ class Game extends React.Component {
     console.log(e.target.innerHTML);
     console.log(e.target.id);
     socket.emit('challenging user', {
-      challenger: {username: e.target.innerHTML, id: e.target.id},
-      challenged: e.target.id
+      challenged: {username: e.target.innerHTML, id: e.target.id},
+      challenger: {username: this.props.username, id: socket.id, socketObj: socket}
     });
   }
 
 
-  // hides starter form and user input, waits for another player to start game
+  // hides starter form and user input, waits for another player tso start game
   getReady() {
     document.getElementById('starter-form').disabled = true;
     document.getElementById('user-input').disabled = true;

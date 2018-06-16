@@ -25,9 +25,9 @@ class App extends React.Component {
     });
   }
 
-  handleMode(mode) {
+  handleMode(difficulty) {
     this.setState({
-      mode
+      mode: difficulty
     })
   }
   updateUserScores(){
@@ -39,7 +39,7 @@ class App extends React.Component {
     })
   }
   updateScoreboard() {
-  	axios.get("/wordgame", {params: {mode:this.state.mode}})
+  	axios.get("/wordgame", {params: {mode: this.state.mode}})
   	.then((results) => {
   		this.setState({
   			scores: results.data
@@ -47,7 +47,7 @@ class App extends React.Component {
     });
   }
   componentDidMount(){
-    this.updateScoreboard()
+    this.updateScoreboard();
   }
   componentDidUpdate(prevProps, prevState){
     if(prevState.mode !== this.state.mode) {

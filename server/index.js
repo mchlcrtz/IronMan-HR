@@ -56,11 +56,8 @@ io.on('connection', (socket) => {
   
   socket.on('disconnect', () => {
     console.log('user disconnected ', socket.id);
-    
     delete livePlayers[socket.id];
-
     io.emit('player entered/left lobby', livePlayers);
-
     // removes user from room, if room has two users; deletes room if user is alone in it
     for (var room in rooms) {
       if (rooms[room].hasOwnProperty(socket.id)) {
@@ -87,14 +84,27 @@ io.on('connection', (socket) => {
   })
 
   socket.on('challenging user', (data) => {
-    io.to(data.challenged).emit('getting challenged', data.challenger);
+    io.to(data.challenged.id).emit('getting challenged', data.challenger);
   })
 
   socket.on('challenge accepted', (players) => {
     delete livePlayers[players.challenged.id];
     delete livePlayers[players.challenger.id];
     io.emit('player entered/left lobby', livePlayers);
-    
+    for(var i = 0; i < 100; i++) {
+      if (!rooms.hasOwnProperty(i)) {
+        rooms[i] = {
+          [players.challenged.id]: players.challenged.username,
+          [players.challenger.id]: players.challenger.username
+        };
+        socket.join(i.toString());
+        players.challenger.socketObj.join(i.toString());
+        io.in(i.toString()).emit('startGame');
+        console.log(`game starting in room ${i}. Players: ${Object.values(rooms[i])}`);
+        console.log('rooms: ', rooms);
+        break;
+      }
+    }
   })
 
   // sends back the user a room for random player matching (supporting 100 rooms)

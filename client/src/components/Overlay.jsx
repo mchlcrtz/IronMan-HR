@@ -4,16 +4,16 @@ class Overlay extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-          instructions:["Humpty Dumpty sat on a wall,", "Humpty Dumpty had a great fall.", "All the king's horses and all the king's men", "Couldn't put Humpty together again.", "HURRY - KEEP TYPING TO PREVENT HIS DEMISE!"],
           mode: 'easy'
         }
         this.handleMode = this.handleMode.bind(this)
     }
     handleMode(e){
+      var difficulty = e.target.id;
       this.setState({
-        mode: e.target.value
+        mode: difficulty
       }, () => {
-        this.props.handleMode(this.state.mode)
+        this.props.handleMode(difficulty)
       })
     }
     render(){
@@ -34,14 +34,14 @@ class Overlay extends React.Component {
         var players = Object.keys(this.props.livePlayers).map((id) => {
           return <div id={id} key={id} className="playerName" onClick={(e)=> this.props.challenge(e)}>{this.props.livePlayers[id]}</div>
         })
-        var instr = <div>Players Online</div>;
+        var onlinePlayersHeader = <div>Players Online</div>;
       } else {
-        var players = instr = null;
+        var players = onlinePlayersHeader = null;
       }
 
       return(
         <div id="overlay">
-          <div>{this.state.instructions.map((line, index) => {
+          <div>{this.props.instructions.map((line, index) => {
             // audio effect:
             playStart();
             return (<span key={index}>{line}<br></br></span>)
@@ -53,16 +53,16 @@ class Overlay extends React.Component {
               <input id="user-input" placeholder="Who are you?" value={this.props.username} onChange={this.props.handleUserNameChange} autoFocus/>
             </form>
           </div>
-          {this.props.prompt === 'START GAME' &&
-          <select value = {this.state.mode} onChange = {this.handleMode}>
-            <option value = 'easy'>Easy</option>
-            <option value = 'medium'>Medium</option>
-            <option value = 'hard'>Hard</option>
-          </select>
-          }
-          {instr}
+          {onlinePlayersHeader}
           {players}
-          {prompt}
+          {this.props.prompt === 'START GAME' ? null : prompt}
+          {this.props.prompt === 'START GAME' &&
+          <ul className="difficulty-wrapper blinking" onClick={(e)=> this.handleMode(e)}>
+            <li className="difficulty" id='easy' >Easy</li>
+            <li className="difficulty" id='medium'>Medium</li>
+            <li className="difficulty" id='hard'>Hard</li>
+          </ul>
+          }
         </div>
       )
     }
