@@ -105,7 +105,7 @@ io.on('connection', (socket) => {
       console.log(livePlayers);
       rooms[data.room][data.challenged.id] = data.challenged.username; 
       socket.join(data.room.toString());
-      io.in(data.room.toString()).emit('startGame', {room: data[room].toString(), players: rooms[data.room]});
+      io.in(data.room.toString()).emit('startGame', {room: data.room.toString(), players: rooms[data.room]});
       console.log(`game starting in room ${data.room}. Players: ${Object.values(rooms[data.room])}`);
       console.log('rooms: ', rooms);
     } else {
