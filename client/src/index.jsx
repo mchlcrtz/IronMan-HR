@@ -51,7 +51,6 @@ class App extends React.Component {
   }
   componentDidUpdate(prevProps, prevState){
     if(prevState.mode !== this.state.mode) {
-      console.log('updated scoreboard')
       this.updateScoreboard()
     }
     if(prevState.username !== this.state.username){

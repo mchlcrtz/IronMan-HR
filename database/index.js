@@ -2,18 +2,6 @@ const mysql = require('mysql');
 const fs = require('fs');
 const path = require('path');
 
-// var credentials = process.env.host;
-// if(credentials === undefined){
-//   credentials = require('./../config.js');
-// } else {
-//   credentials = {
-//     host: process.env.host,
-//     user: process.env.user,
-//     password: process.env.password,
-//     database: process.env.database
-//   }
-// }
-
 const connection = mysql.createConnection({
   host: 'ironman.crb3zmhwoovo.us-east-1.rds.amazonaws.com',
   user: 'IronMan', 
@@ -22,20 +10,6 @@ const connection = mysql.createConnection({
   port: 3306,
   timeout: 6000,
 });
-
-// const connection = mysql.createConnection({
-//   database: 'humptydumpty',
-//   user: 'root',
-//   password: '',
-// })
-// const connection = mysql.createConnection({
-//   host: credentials.host,
-//   user: credentials.user,
-//   password: credentials.password, 
-//   database: credentials.database,
-//   port: 3306,
-//   timeout: 6000,
-// });
 
 connection.connect(function(err) {
   if (err) {
@@ -127,15 +101,6 @@ const retrieveUserScores = ({username}, callback) => {
     }
   })
 } 
-
-// retrieve high score for a certain user
-// const retrieveHighScore = function(user, callback) {
-//   let queryStr = `SELECT high_score FROM users WHERE username = '${user.username}'`;
-//   connection.query(queryStr, (err, data) => {
-//     if(err) console.log('DB: error retrieving high score for a certain user', err);
-//     callback(data);
-//   });
-// };
 
 //check if a user has played before, and add or update accordingly
 const addUserOrUpdateScore = function(userWithScore, callback) {

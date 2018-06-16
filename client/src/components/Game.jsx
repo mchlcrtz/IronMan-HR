@@ -46,15 +46,11 @@ class Game extends React.Component {
       this.updateOpponentWordList(words);
     });
     socket.on('startGame', (roomNum) => {
-      console.log('game started, room num: ', roomNum);
-      this.setState({
-        room: roomNum
-      }, () => console.log('this.state.room: ', this.state.room));
+      this.setState({room: roomNum});
       this.startGame();
     });
     socket.on('they lost', (score) => {
       // this is bad, eventually put a red x over their bricks or something
-      console.log('they lost received, score: ', score)
       this.setState({
         opponentTime: score,
         instructions: ['GAME OVER', `YOU SCORED: ${this.state.time}`, `YOUR OPPONENT SCORED: ${score}`]
@@ -74,10 +70,8 @@ class Game extends React.Component {
       );
       if (accept === true) {
         data.response = true;
-        console.log('accepted challenge');
       } else {
         data.response = false;
-        console.log('challenge denied');
       }
       socket.emit('challenge response', data)
     })
@@ -152,10 +146,10 @@ class Game extends React.Component {
 
   // challenge online player
   challenge(e) {
-    console.log(e.target.innerHTML);
-    console.log(e.target.id);
+    var i = e.target.innerHTML.indexOf('<');
+    var challengedUsername = e.target.innerHTML.substring(0, i);
     socket.emit('challenging user', {
-      challenged: {username: e.target.innerHTML, id: e.target.id},
+      challenged: {username: challengedUsername, id: e.target.id},
       challenger: {username: this.props.username, id: socket.id}
     });
   }
@@ -223,6 +217,7 @@ class Game extends React.Component {
           score: this.state.time
         });
         this.stopGame();
+        return;
       } else if (this.state.words.length > 15) {
         document.getElementById('gudetama').style.backgroundColor = "rgba(255, 0, 0, 1)";
       } else if (this.state.words.length > 10) {

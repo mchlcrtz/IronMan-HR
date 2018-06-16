@@ -16,7 +16,6 @@ app.get('/wordgame', (req, res) => {
 
 // at end of game, add to or update db with username and high score
 app.post('/wordgame', (req,res) => {
-  //console.log(req.body)
   addUserOrUpdateScore(req.body, (results) => {
     res.status(201).send(results);
   });
@@ -68,7 +67,6 @@ io.on('connection', (socket) => {
         }
       }
     }
-    console.log('rooms: ', rooms);
   });
   
   // adds client to live playes and returns list of usernames that are currently looking for a match
@@ -102,16 +100,18 @@ io.on('connection', (socket) => {
       delete livePlayers[data.challenged.id];
       delete livePlayers[data.challenger.id];
       io.emit('player entered/left lobby', livePlayers);
-      console.log(livePlayers);
       rooms[data.room][data.challenged.id] = data.challenged.username; 
       socket.join(data.room.toString());
-      io.in(data.room.toString()).emit('startGame', {room: data.room.toString(), players: rooms[data.room]});
+      io.in(data.room.toString()).emit('startGame', data.room.toString());
       console.log(`game starting in room ${data.room}. Players: ${Object.values(rooms[data.room])}`);
-      console.log('rooms: ', rooms);
     } else {
-      io.sockets.clients(data.room.toString()).forEach(function(s){
-        s.broadcast.to(socket.id).emit('challenge denied', data.challenged.username);
-        s.leave(data.room.toString());
+      // replies to challenger that challenged user denied and clears the room
+      io.of('/').in(data.room.toString()).clients((error, socketIds) => {
+        if (error) throw error;
+        socketIds.forEach(socketId => {
+          socket.broadcast.to(socketId).emit('challenge denied', data.challenged.username);
+          io.sockets.sockets[socketId].leave('chat');
+        });
       });
       delete rooms[data.room];
     }
@@ -136,9 +136,8 @@ socket.on('entering room', (username /*, cb*/) => {
           rooms[i][socket.id] = username;
           //cb(i.toString());
           socket.join(i.toString());
-          io.in(i.toString()).emit('startGame', {room: i.toString(), players: rooms[i]});
+          io.in(i.toString()).emit('startGame', i.toString());
           console.log(`game starting in room ${i}. Players: ${Object.values(rooms[i])}`);
-          console.log('rooms: ', rooms);
           return;
       } 
     }
