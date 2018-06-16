@@ -1,25 +1,69 @@
-# IronMan-HR
-Welcome to the Save Gudetama typing game! The typing game for "adults."
+# TeamGroot-HR
+> Welcome to the Save Gudetama typing game! 
+>
+> Play against yourself and beat your highscore or play online in multiplayer mode.
 
-For 2-player, hit "Enter." For single-player, click "Start."
+## About this project
+This app was build during HackReactor's 15th NYC cohort. Our Team took over the project as legacy code, which has been built by another group the week before. Our team added a few features during one week.
 
-You will probably encounter bugs like not being able to get past 'WAITING...' and/or starting before both users are ready. Your answers are in server/index.js, which contains all socket logic. Console.log "rooms" at each stage (entering room, ready, loss, leaving room) to see its value. It's currently set to only run when 2 users are in a room - any more or fewer and it won't work.
+## What existed
+The functionality of the game itself existed already. MultiPlayer was possible, but more than 2 players online would crash the app. Also the UI/UX was unintuitive.
 
-Suggestions for where to go from here - take or leave!
-- allow users to join a "board" like Hack Reactor, where high scores are displayed. Allow users to challenge other users to create dynamic "rooms." (Right now, the "room" is hardcoded to "scottVsLina" in index.jsx). You'll have to change the data schema to do this.
-- game logic - sometimes there are bugs with the logic in server/index.js to determine who is in the "room." These will probably get ironed out if you're tackling the above issue.
-- display the round to user
-- add spedometer to show typing speed
-- CSS - center the cracked egg, show a different GIF depending on if you win or lose, improve the look of the loser's stack of bricks
+## What we added
+- The ability to choose Single or MultiPlayer.
+- Allowing multiple rooms to host matches at the same time
+- Random player matching functionality
+- Challenging another user that is online
+- Different modes for single player (easy, medium, difficult)
+- Design improvements
+- Bug fixes
 
-LOGIN AND CONFIGURATION INFO:
+## Our Team
+  - __Product Owner__: Laurents Mohr https://github.com/laurentsmohr
+  - __Scrum Master__: Michael Cortez https://github.com/mchlcrtz
+  
+## Table of Contents
 
-App URL: https://tranquil-stream-98217.herokuapp.com/
+1. [Usage](#Usage)
+1. [Requirements](#requirements)
+1. [Development](#development)
+    1. [Installing Dependencies](#installing-dependencies)
+    1. [Tasks](#tasks)
+1. [Team](#team)
+1. [Contributing](#contributing)
 
-Heroku:
-scott.mccreary.11@gmail.com
-pw: IronMan-HR
+## Usage
 
-Database- AWS RDS:
-username: IronMan pw: IronMan-HR
-name: humptydumpty port: 3306
+> In MultiPlayer: You see other players in the lobby. You can either ask for random player matching or click on an online user, which will 
+send a challenge request to that user. If the other user accepts, the game will start. In random player matching, the game starts as soon as another player is found.
+> In Single Player you can set the difficulty level. Easier difficulties will have shorter words than harder difficulties.
+
+
+## Development
+
+### Installing Dependencies
+
+From within the root directory:
+
+```sh
+sudo npm install -g bower
+npm install
+bower install
+```
+__Starting the Server:__
+```sh
+npm start
+```
+__Running Webpack/Starting Dev Environment:__
+```sh
+npm react-dev
+```
+
+### Suggestions for where to go from here - take or leave!
+- Design improvements
+- Button to toggle background music on/off
+- Chat functionality
+- Authentication for data persistence of user's high scores. (Currently anyone can log-in with any username.)
+- PowerUps
+- Different themes
+- Different languages
