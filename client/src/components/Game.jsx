@@ -3,7 +3,6 @@ import Brick from './Brick.jsx';
 import Overlay from './Overlay.jsx';
 import Timer from './Timer.jsx'
 import axios from 'axios';
-import PowerBank from './PowerBank.jsx';
 
 import io from 'socket.io-client';
 const socket = io();
