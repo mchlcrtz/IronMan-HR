@@ -25,8 +25,6 @@ class Game extends React.Component {
       prompt: ['SINGLE PLAYER', 'MULTI PLAYER'],
       mode: 'multi',
       difficulty: 'easy',
-      powerups: {},
-      bankedPowers: [],
       opponentTime: 0,
       livePlayers: []
     }
@@ -48,13 +46,19 @@ class Game extends React.Component {
     socket.on('receive words from opponent', (words) => {
       this.updateOpponentWordList(words);
     });
-    socket.on('startGame', () => {
+    socket.on('startGame', (roomNum) => {
+      console.log('game started, room num: ', roomNum);
+      this.setState({
+        room: roomNum
+      }, () => console.log('this.state.room: ', this.state.room));
       this.startGame();
     });
     socket.on('they lost', (score) => {
       // this is bad, eventually put a red x over their bricks or something
+      console.log('they lost received, score: ', score)
       this.setState({
         opponentTime: score,
+        instructions: ['GAME OVER', `YOU SCORED: ${this.state.time}`, `YOUR OPPONENT SCORED: ${score}`]
       })
       document.getElementById('their-game').style.backgroundColor = "red";
     });
@@ -64,28 +68,23 @@ class Game extends React.Component {
          livePlayers: data
        })
     })
-    socket.on('getting challenged', (challenger) => {
-      console.log('getting challenged by ', challenger.username);
+    socket.on('getting challenged', (data) => {
       var accept = confirm(
-        `${challenger.username} challenges you!
+        `${data.challenger.username} challenges you!
           Do you accept the challenge?`
       );
       if (accept === true) {
+        data.response = true;
         console.log('accepted challenge');
-        socket.emit('challenge accepted', {
-          challenger: {username: challenger.username, id: challenger.id, socketObj: challenger.socketObj},
-          challenged: {username: this.props.username, id: socket.id}
-        })
       } else {
-        socket.emit('challenge denied', {
-          challenger: {username: challenger.username, id: challenger.id, socketObj: challenger.socketObj},
-          challenged: {username: this.props.username, id: socket.id}
-        })
+        data.response = false;
+        console.log('challenge denied');
       }
+      socket.emit('challenge response', data)
     })
-    socket.on('challenged player accepted', (cb) => {
-      cb(socket);
-    });
+    socket.on('challenge denied', (opponent) => {
+      alert(`${opponent} denied the challenge`);
+    })
 
   }
 
@@ -158,7 +157,7 @@ class Game extends React.Component {
     console.log(e.target.id);
     socket.emit('challenging user', {
       challenged: {username: e.target.innerHTML, id: e.target.id},
-      challenger: {username: this.props.username, id: socket.id, socketObj: socket}
+      challenger: {username: this.props.username, id: socket.id}
     });
   }
 
@@ -172,15 +171,15 @@ class Game extends React.Component {
     });
     
     // requesting a room for random multiplayer matches and entering that room.
-    socket.emit('entering room', this.props.username, ((data) => {
+    socket.emit('entering room', this.props.username) /*, ((data) => {
       this.setState({
         room: data
-      })
+      })*/
     //   socket.emit('ready', {
     //     room: this.state.room, 
     //     username: this.props.username
     //   });
-    }));
+    //}));
   }
 
   startGame() {
@@ -367,7 +366,7 @@ class Game extends React.Component {
     } else {
       var instr = ['GAME OVER', `YOU SCORED: ${this.state.time}`]
     }
-
+    console.log({instr});
     this.setState({
       // maybe find a way to compare your score vs opponent's score and show YOU WIN/YOU LOSE
       instructions: instr,

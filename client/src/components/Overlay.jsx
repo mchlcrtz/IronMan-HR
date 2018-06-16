@@ -32,9 +32,12 @@ class Overlay extends React.Component {
       // checks if we are in selecting opponent phase
       if(this.props.prompt === 'PLAY RANDOM OPPONENT') {
         var players = Object.keys(this.props.livePlayers).map((id) => {
-          return <div id={id} key={id} className="playerName" onClick={(e)=> this.props.challenge(e)}>{this.props.livePlayers[id]}</div>
+          return <div id={id} key={id} className="playerName" onClick={(e)=> this.props.challenge(e)}>{this.props.livePlayers[id]}<span class="dot"></span></div>
         })
-        var onlinePlayersHeader = <div>Players Online</div>;
+        if (players.length === 0) {
+          players = <div className="noLivePlayers" style={{color: "lightcoral"}}>No players online</div>
+        }
+        var onlinePlayersHeader = <div className="playersHeader">Challenge Online Players:</div>;
       } else {
         var players = onlinePlayersHeader = null;
       }
@@ -54,7 +57,11 @@ class Overlay extends React.Component {
             </form>
           </div>
           {onlinePlayersHeader}
-          {players}
+          {players && 
+          <div className="playersWrapper">
+            {players}
+            <p className="or">or</p>
+          </div>}
           {this.props.prompt === 'START GAME' ? null : prompt}
           {this.props.prompt === 'START GAME' &&
           <ul className="difficulty-wrapper blinking" onClick={(e)=> this.handleMode(e)}>
