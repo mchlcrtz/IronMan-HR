@@ -1,23 +1,32 @@
 import React from 'react';
 import Brick from './Brick.jsx';
+import Overlay from './Overlay.jsx';
+import Timer from './Timer.jsx'
 import axios from 'axios';
-const io = require('socket.io-client'); 
+import PowerBank from './PowerBank.jsx';
+
+import io from 'socket.io-client';
 const socket = io();
 
 class Game extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      room: '',
       userInput: '',
       dictionary: {},
       words: [],
       theirWords: [],
       time: 0,
       timeInterval: 1000,
+      modeInterval: 700,
       round: 'all',
       instructions: ["Humpty Dumpty sat on a wall,", "Humpty Dumpty had a great fall.", "All the king's horses and all the king's men", "Couldn't put Humpty together again.", "HURRY - KEEP TYPING TO PREVENT HIS DEMISE!"],
-      prompt: 'START GAME',
-      opponentTime: 0
+      prompt: ['SINGLE PLAYER', 'MULTI PLAYER'],
+      mode: 'multi',
+      difficulty: 'easy',
+      opponentTime: 0,
+      livePlayers: []
     }
     
     this.getReady = this.getReady.bind(this);
@@ -28,23 +37,55 @@ class Game extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.sendScore = this.sendScore.bind(this);
     this.stopGame = this.stopGame.bind(this);
-
-    var c = io.connect(process.env.PORT, {query: this.state.time})
-    console.log('c', c)
+    this.handleMode = this.handleMode.bind(this);
+    this.choosePlayersMode = this.choosePlayersMode.bind(this);
+    this.enteringMultiPlayerLobby = this.enteringMultiPlayerLobby.bind(this);
+    this.challenge = this.challenge.bind(this);
+  
 
     socket.on('receive words from opponent', (words) => {
       this.updateOpponentWordList(words);
     });
-    socket.on('startGame', () => {
+    socket.on('startGame', (roomNum) => {
+      console.log('game started, room num: ', roomNum);
+      this.setState({
+        room: roomNum
+      }, () => console.log('this.state.room: ', this.state.room));
       this.startGame();
     });
     socket.on('they lost', (score) => {
       // this is bad, eventually put a red x over their bricks or something
+      console.log('they lost received, score: ', score)
       this.setState({
         opponentTime: score,
+        instructions: ['GAME OVER', `YOU SCORED: ${this.state.time}`, `YOUR OPPONENT SCORED: ${score}`]
       })
       document.getElementById('their-game').style.backgroundColor = "red";
     });
+    socket.on('player entered/left lobby', (data) => {
+       if(data[socket.id]) delete data[socket.id];
+       this.setState({
+         livePlayers: data
+       })
+    })
+    socket.on('getting challenged', (data) => {
+      var accept = confirm(
+        `${data.challenger.username} challenges you!
+          Do you accept the challenge?`
+      );
+      if (accept === true) {
+        data.response = true;
+        console.log('accepted challenge');
+      } else {
+        data.response = false;
+        console.log('challenge denied');
+      }
+      socket.emit('challenge response', data)
+    })
+    socket.on('challenge denied', (opponent) => {
+      alert(`${opponent} denied the challenge`);
+    })
+
   }
 
   // get words from dictionary and join socket
@@ -57,42 +98,88 @@ class Game extends React.Component {
     }).catch(err => {
       console.error(err);
     });
-    socket.emit('entering room', {
-      room: this.props.room, 
-      username: this.props.username
-    });
   }
 
   // sends your words to opponent
   componentDidUpdate(prevProps, prevState) {
     if (this.state.words.length !== prevState.words.length) {
       socket.emit('send words to opponent', {
-        room: this.props.room,
+        room: this.state.room,
         newWords: this.state.words,
       }); 
     }
   }
 
-  // leave socket
-  componentWillUnmount() {  
-    socket.emit('leaving room', {
-      room: this.props.room,
-      username: this.props.username,
+  handleMode(difficulty){
+    this.setState({difficulty}, 
+      () => {
+        this.props.handleMode(difficulty)
+        this.startGame();
+      }
+    )
+  }
+
+  enteringMultiPlayerLobby() {
+    socket.emit('entering multi player lobby', this.props.username, () => {
+      this.setState({
+        prompt: "PLAY RANDOM OPPONENT"
+      })
     });
   }
 
-  // hides starter form and user input, waits for another player to start game
-  getReady(e) {
+  choosePlayersMode(e) {
     e.preventDefault();
+    console.log(e.target.innerHTML)
+    if(e.target.innerHTML === "MULTI PLAYER") {
+      this.setState({mode: 'multi', difficulty: 'medium'}, () => {
+        this.props.handleMode('medium');
+        this.enteringMultiPlayerLobby();
+      })
+    } else if (e.target.innerHTML === "PLAY RANDOM OPPONENT") {
+      socket.emit('leaving multi player lobby', this.props.username);
+      this.getReady();
+    } else if (e.target.innerHTML === "SINGLE PLAYER") {
+      this.setState({mode: 'single', prompt: "START GAME"});
+    } else if (e.target.innerHTML === "START GAME") {
+      this.startGame();
+    } else if (e.target.innerHTML === "REPLAY") {
+      if(this.state.mode === 'multi') {
+        this.getReady();
+      } else {
+        this.startGame();
+      }
+    }
+  }
+
+  // challenge online player
+  challenge(e) {
+    console.log(e.target.innerHTML);
+    console.log(e.target.id);
+    socket.emit('challenging user', {
+      challenged: {username: e.target.innerHTML, id: e.target.id},
+      challenger: {username: this.props.username, id: socket.id}
+    });
+  }
+
+
+  // hides starter form and user input, waits for another player tso start game
+  getReady() {
     document.getElementById('starter-form').disabled = true;
     document.getElementById('user-input').disabled = true;
     this.setState({
       prompt: 'WAITING...',
     });
-    socket.emit('ready', {
-      room: this.props.room, 
-      username: this.props.username
-    });
+    
+    // requesting a room for random multiplayer matches and entering that room.
+    socket.emit('entering room', this.props.username) /*, ((data) => {
+      this.setState({
+        room: data
+      })*/
+    //   socket.emit('ready', {
+    //     room: this.state.room, 
+    //     username: this.props.username
+    //   });
+    //}));
   }
 
   startGame() {
@@ -108,6 +195,13 @@ class Game extends React.Component {
       display: "inline-block",
       backgroundColor: "none",
     };
+
+    //changing display based on one or two players
+    if(this.state.mode === 'single') {
+      document.getElementById('their-game').style.display = "none";
+    } else if (this.state.mode === 'multi') {
+      document.getElementById('their-game').style.display = "flex";
+    }
 
     // long function to define what happens at every interval
     var go = () => {
@@ -125,7 +219,7 @@ class Game extends React.Component {
         clearTimeout(step);
         //console.log('opponent time',this.state.time)
         socket.emit('i lost', {
-          room: this.props.room, 
+          room: this.state.room, 
           username: this.props.username, 
           score: this.state.time
         });
@@ -139,22 +233,31 @@ class Game extends React.Component {
       // updates the time and speeds up the game accordingly 
       // (as timeInterval decreases, words appear at a faster rate)
       var newTime = this.state.time + 1;
+      if(this.state.difficulty === 'easy') {
+        this.setState({round: 'roundOne'})
+      }
+      if(this.state.difficulty === 'medium') {
+        this.setState({round: 'roundTwo'})
+      }
+      if(this.state.difficulty === 'hard') {
+        this.setState({round: 'roundThree'})
+      }
       if (newTime > 20) {
         this.setState({
           time: newTime,
-          timeInterval: 600,
-          //round: 'roundThree', // uncomment these to only serve short words at beginning, long words at end
+          timeInterval: this.state.modeInterval,
+          // round: 'roundThree' // uncomment these to only serve short words at beginning, long words at end
         });
       } else if (newTime > 8) { 
         this.setState({
           time: newTime,
-          timeInterval: 800,
-          //round: 'roundTwo',
+          timeInterval: this.state.modeInterval,
+          // round: 'roundOne'
         });
       } else {
         this.setState({
           time: newTime,
-          //round: 'roundOne',
+          // round: 'roundOne',
         });
       }
     }
@@ -224,12 +327,14 @@ class Game extends React.Component {
   }
 
   // upon game over, sends username and score to database to be added/updated
-  sendScore(username, score) {
+  sendScore(username, score, difficulty) {
     axios.post('/wordgame', {
       "username": username,
-      "high_score": score
+      "high_score": score,
+      "mode": difficulty
     })
     .then(result => {
+      this.props.updateScoreboard()
       console.log(result);
     }).catch(err => {
       console.error(err);
@@ -256,35 +361,34 @@ class Game extends React.Component {
     // audio effect
     playGameOver();
     
+    if(this.state.mode === "multi") {
+      var instr = ['GAME OVER', `YOU SCORED: ${this.state.time}`, `YOUR OPPONENT SCORED: ${this.state.opponentTime}`]
+    } else {
+      var instr = ['GAME OVER', `YOU SCORED: ${this.state.time}`]
+    }
+    console.log({instr});
     this.setState({
       // maybe find a way to compare your score vs opponent's score and show YOU WIN/YOU LOSE
-      instructions: ['GAME OVER', `YOU SCORED: ${this.state.time}`, `YOUR OPPONENT SCORED: ${this.state.opponentTime}`],
-      prompt: 'REPLAY',
+      instructions: instr,
+      prompt: 'REPLAY'
     });
   }
 
   render() {
     return (
       <div className="game">
-        <div id="overlay">
-          <div>{this.state.instructions.map((line, index) => {
-            // audio effect:
-            playStart();
-            return (<span key={index}>{line}<br></br></span>)
-          })}</div>
-          <div id="crackedegg"></div>
-          <div>
-            {/* "getReady" waits for 2 players, "startGame" (on click) is 1 player */}
-            <form id="starter-form" onSubmit={this.getReady} autoComplete="off">
-              <input id="user-input" placeholder="Who are you?" value={this.props.username} onChange={this.props.handleUserNameChange} autoFocus/>
-            </form>
-          </div>
-          <div id="overlay-start" onClick={this.startGame} className="blinking">{this.state.prompt}</div>
-        </div>
+        <Overlay
+          instructions={this.state.instructions}
+          prompt={this.state.prompt}
+          choosePlayersMode={this.choosePlayersMode}
+          username={this.props.username}
+          handleUserNameChange={this.props.handleUserNameChange}
+          livePlayers={this.state.livePlayers}
+          challenge={this.challenge}
+          handleMode = {this.handleMode}
+        />
     
-        <div className="timer">
-          <h1>{this.state.time}</h1>
-        </div>
+      <Timer time = {this.state.time}/>
 
         <div className="board">
           {/* your game: */}
