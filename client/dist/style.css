@@ -7,9 +7,10 @@ ul, li {
   list-style: none;
 }
 
-* {
-  box-sizing: border-box;
-  /*border: 1px solid black; */
+* { 
+  -moz-box-sizing: border-box; 
+  -webkit-box-sizing: border-box; 
+  box-sizing: border-box; 
 }
 
 html, body, #app, .app-container {
@@ -24,7 +25,9 @@ html, body, #app, .app-container {
 
 #overlay {
   position: fixed;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   height: 75%;
   width: 65%;
   top: 0; 
@@ -34,8 +37,6 @@ html, body, #app, .app-container {
   margin: auto;
   background-color: rgba(0, 0, 0, 0.85);
   z-index: 2;
-  /* align-items: center; */
-  /*justify-content: center;*/
   color: white;
   font-size: 14px;
   line-height: 180%; 
@@ -46,7 +47,7 @@ html, body, #app, .app-container {
 #overlay form {
   margin: auto;
   padding: 2%;
-  width: 60%;
+  width: 1000%;
   text-align: center;
 }
 
@@ -69,6 +70,7 @@ html, body, #app, .app-container {
   padding: 25px 0;
   cursor: pointer;
 }
+
 
 .overlay-prompt:hover {
   color: yellow;
@@ -181,6 +183,7 @@ input {
   text-align: center;
   border-radius: 10px;
   font-size: 1.5em;
+  padding: 0 50px;
 }
 
 .brick {
@@ -206,8 +209,7 @@ input {
 #crackedegg {
   width: 45%;
   height: 45%;
-  background: url("./assets/gudetama-cracked.gif") no-repeat center/cover;
-  background-position: center; 
+  background: url("./assets/gudetama-cracked.gif") no-repeat center;
 }
 
 .sbColumn {
@@ -246,59 +248,4 @@ input {
 .item {
   padding-top: 20px;
   padding-bottom: 20px;
-}
-
-.power0 {
-  color: green;
-}
-
-.power1 {
-  color: red;
-}
-
-.power2 {
-  color: blue;
-}
-
-.powerup {
-  display: inline-block;
-  width: 15px;
-  height: 15px;
-  border: 1px solid black;
-  margin: 2px;
-}
-
-#power-bank {
-  width: 125px;
-}
-#power-bank .power0{
-  background-color: green;
-}
-
-#power-bank .power1 {
-  background-color: red;
-}
-
-#power-bank .power2 {
-  background-color: blue;
-}
-
-#power-bank #legend .power0{
-  background-color: green;  
-
-}
-#power-bank #legend .power1 {
-  background-color: red;
-
-}
-#power-bank #legend .power2 {
-  background-color: blue;
-
-}
-
-#power-bank #legend div{
-  width: 120px;
-  padding: 1px;
-  color: white;
-  font-size: 9px;
 }
