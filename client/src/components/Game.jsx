@@ -5,8 +5,6 @@ import Timer from './Timer.jsx'
 import axios from 'axios';
 import PowerBank from './PowerBank.jsx';
 
-import { EEXIST } from 'constants';
-
 import io from 'socket.io-client';
 const socket = io();
 
@@ -27,8 +25,6 @@ class Game extends React.Component {
       prompt: ['SINGLE PLAYER', 'MULTI PLAYER'],
       mode: 'multi',
       difficulty: 'easy',
-      powerups: {},
-      bankedPowers: [],
       opponentTime: 0,
       livePlayers: []
     }
@@ -50,13 +46,19 @@ class Game extends React.Component {
     socket.on('receive words from opponent', (words) => {
       this.updateOpponentWordList(words);
     });
-    socket.on('startGame', () => {
+    socket.on('startGame', (roomNum) => {
+      console.log('game started, room num: ', roomNum);
+      this.setState({
+        room: roomNum
+      }, () => console.log('this.state.room: ', this.state.room));
       this.startGame();
     });
     socket.on('they lost', (score) => {
       // this is bad, eventually put a red x over their bricks or something
+      console.log('they lost received, score: ', score)
       this.setState({
         opponentTime: score,
+        instructions: ['GAME OVER', `YOU SCORED: ${this.state.time}`, `YOUR OPPONENT SCORED: ${score}`]
       })
       document.getElementById('their-game').style.backgroundColor = "red";
     });
@@ -66,20 +68,24 @@ class Game extends React.Component {
          livePlayers: data
        })
     })
-    socket.on('getting challenged', (challenger) => {
-      console.log('getting challenged by ', challenger.username);
+    socket.on('getting challenged', (data) => {
       var accept = confirm(
-        `${challenger.username} challenges you!
-          Do you accept the challenge?
-        `
+        `${data.challenger.username} challenges you!
+          Do you accept the challenge?`
       );
       if (accept === true) {
-        socket.emit('challenge accepted', {
-          challenger,
-          challenged: {username: this.props.username, id: socket.id}
-        })
+        data.response = true;
+        console.log('accepted challenge');
+      } else {
+        data.response = false;
+        console.log('challenge denied');
       }
+      socket.emit('challenge response', data)
     })
+    socket.on('challenge denied', (opponent) => {
+      alert(`${opponent} denied the challenge`);
+    })
+
   }
 
   // get words from dictionary and join socket
@@ -106,7 +112,11 @@ class Game extends React.Component {
 
   handleMode(difficulty){
     this.setState({difficulty}, 
-      () => this.props.handleMode(difficulty))
+      () => {
+        this.props.handleMode(difficulty)
+        this.startGame();
+      }
+    )
   }
 
   enteringMultiPlayerLobby() {
@@ -121,16 +131,17 @@ class Game extends React.Component {
     e.preventDefault();
     console.log(e.target.innerHTML)
     if(e.target.innerHTML === "MULTI PLAYER") {
-      this.setState({mode: 'multi'}, () => {
+      this.setState({mode: 'multi', difficulty: 'medium'}, () => {
+        this.props.handleMode('medium');
         this.enteringMultiPlayerLobby();
       })
     } else if (e.target.innerHTML === "PLAY RANDOM OPPONENT") {
       socket.emit('leaving multi player lobby', this.props.username);
       this.getReady();
     } else if (e.target.innerHTML === "SINGLE PLAYER") {
-      this.setState({mode: 'single'}, () => {
-        this.startGame();
-      })
+      this.setState({mode: 'single', prompt: "START GAME"});
+    } else if (e.target.innerHTML === "START GAME") {
+      this.startGame();
     } else if (e.target.innerHTML === "REPLAY") {
       if(this.state.mode === 'multi') {
         this.getReady();
@@ -145,13 +156,13 @@ class Game extends React.Component {
     console.log(e.target.innerHTML);
     console.log(e.target.id);
     socket.emit('challenging user', {
-      challenger: {username: e.target.innerHTML, id: e.target.id},
-      challenged: e.target.id
+      challenged: {username: e.target.innerHTML, id: e.target.id},
+      challenger: {username: this.props.username, id: socket.id}
     });
   }
 
 
-  // hides starter form and user input, waits for another player to start game
+  // hides starter form and user input, waits for another player tso start game
   getReady() {
     document.getElementById('starter-form').disabled = true;
     document.getElementById('user-input').disabled = true;
@@ -160,15 +171,15 @@ class Game extends React.Component {
     });
     
     // requesting a room for random multiplayer matches and entering that room.
-    socket.emit('entering room', this.props.username, ((data) => {
+    socket.emit('entering room', this.props.username) /*, ((data) => {
       this.setState({
         room: data
-      })
+      })*/
     //   socket.emit('ready', {
     //     room: this.state.room, 
     //     username: this.props.username
     //   });
-    }));
+    //}));
   }
 
   startGame() {
@@ -355,7 +366,7 @@ class Game extends React.Component {
     } else {
       var instr = ['GAME OVER', `YOU SCORED: ${this.state.time}`]
     }
-
+    console.log({instr});
     this.setState({
       // maybe find a way to compare your score vs opponent's score and show YOU WIN/YOU LOSE
       instructions: instr,
