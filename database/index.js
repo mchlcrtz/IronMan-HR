@@ -14,21 +14,22 @@ const path = require('path');
 //   }
 // }
 
-const connection = mysql.createConnection({
-  host: 'ironman.crb3zmhwoovo.us-east-1.rds.amazonaws.com',
-  user: 'IronMan', 
-  password: 'IronMan-HR', 
-  database: 'humptydumpty',
-  port: 3306,
-  timeout: 6000,
-});
-
 // const connection = mysql.createConnection({
+//   host: 'ironman.crb3zmhwoovo.us-east-1.rds.amazonaws.com',
+//   user: 'IronMan', 
+//   password: 'IronMan-HR', 
 //   database: 'humptydumpty',
-//   user: 'root',
-//   password: '',
-// })
-// const connection = mysql.createConnection({
+//   port: 3306,
+//   timeout: 6000,
+// });
+
+const connection = mysql.createConnection({
+  database: 'humptydumpty',
+  user: 'root',
+  password: '',
+})
+// const
+//  connection = mysql.createConnection({
 //   host: credentials.host,
 //   user: credentials.user,
 //   password: credentials.password, 
