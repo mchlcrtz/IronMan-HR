@@ -47,7 +47,7 @@ html, body, #app, .app-container {
 #overlay form {
   margin: auto;
   padding: 2%;
-  width: 1000%;
+  width: 100%;
   text-align: center;
 }
 
