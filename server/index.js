@@ -10,6 +10,7 @@ app.use(bodyParser.json());
 // querying all users and scores from the database 
 app.get('/wordgame', (req, res) => { 
   retrieveUsers(req.query, (data) => {
+    console.log(data)
     res.send(data);
   });
 });

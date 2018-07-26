@@ -26,6 +26,7 @@ class App extends React.Component {
   }
 
   handleMode(difficulty) {
+    console.log(difficulty);
     this.setState({
       mode: difficulty
     });
