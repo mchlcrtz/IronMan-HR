@@ -16,11 +16,20 @@ app.get('/wordgame', (req, res) => {
 });
 
 // at end of game, add to or update db with username and high score
+// this should only create a new user
 app.post('/wordgame', (req,res) => {
   addUserOrUpdateScore(req.body, (results) => {
     res.status(201).send(results);
   });
 });
+
+// update score of exisiting user
+
+app.put('/wordgame', (req, res) => {
+  updateScore(req,body, (results) => {
+    res.status(201).send(results)
+  })
+})
 
 // retrieve user scores from database
 app.get('/userScores', (req, res) => {
