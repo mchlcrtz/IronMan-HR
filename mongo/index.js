@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const mongoDB = "mongodb://localhost/pokemon";
+const User = require("./schema");
 
 const db = mongoose.connect(mongoDB, { useNewUrlParser: true });
 
@@ -67,11 +68,52 @@ const get1000Words = callback => {
 };
 
 // retrieve top 10 users and their high scores
-const retrieveUsers = function({ mode }, callback) {};
+const retrieveUsers = ({ mode }, cb) => {
+  User.find(mode)
+    .then(resp => {
+      cb(resp);
+    })
+    .catch(err => {
+      cb(err);
+    });
+};
 
-const retrieveUserScores = ({ username }, callback) => {};
+const retrieveUserScores = (user, cb) => {
+  User.findOne(user)
+    .then(resp => {
+      cb(resp);
+    })
+    .catch(err => {
+      cb(err);
+    });
+};
 
 //check if a user has played before, and add or update accordingly
-const addUser = function(userWithScore, callback) {};
+const addUser = (user, cb) => {
+  User.create(user)
+    .then(resp => {
+      cb(resp);
+    })
+    .catch(err => {
+      cb(err);
+    });
+};
 
-module.exports = { db };
+const updateScore = (user, cb) => {
+  User.findOneAndUpdate({ id: user.id }, user, { new: true }, (err, result) => {
+    if (err) {
+      cb("Could not update");
+    } else {
+      cb(result);
+    }
+  });
+};
+
+module.exports = {
+  db,
+  get1000Words,
+  retrieveUsers,
+  retrieveUserScores,
+  addUser,
+  updateScore,
+};
