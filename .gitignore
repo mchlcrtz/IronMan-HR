@@ -1,8 +1,5 @@
 node_modules
 package-lock.json
 .DS_Store
-<<<<<<< HEAD
-bundle.js
-=======
-config.js
->>>>>>> modes
+client/dist/
+.history/
